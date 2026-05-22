@@ -96,7 +96,12 @@ export function BoothProvider({ children }: { children: ReactNode }) {
     setLayout: (layoutId) => socket.emit('set_layout', { layoutId }),
     setModule: (moduleId) => socket.emit('set_module', { moduleId }),
     reset: () => socket.emit('user_clicked_reset'),
-    startSession: (data) => socket.emit('user_clicked_start', data ?? {}),
+    startSession: (data) => {
+      setBoothState(2)
+      setResult(null)
+      setKept(0)
+      socket.emit('user_clicked_start', data ?? {})
+    },
   }
 
   return <BoothContext.Provider value={value}>{children}</BoothContext.Provider>

@@ -4,7 +4,7 @@ import os
 # Module-level session state (lives as long as the .toe is open)
 current_session_path = ""
 attempt_count = 0
-active_module = "cyber_standard"
+active_module = ""
 
 
 # ── Path helpers ───────────────────────────────────────────────────────────────
@@ -108,6 +108,12 @@ def _handle_ready_for_next_attempt(body):
 
 def _handle_reset(body):
     global current_session_path, attempt_count
+    module_name = body.get('module', '')
+    if module_name and module_name != active_module:
+        try:
+            _handle_set_module({'module': module_name})
+        except Exception as e:
+            print(f'[comm_server] module switch failed during reset, continuing: {e}')
     session_id = body.get('sessionID', 'default')
     current_session_path = os.path.join(_sessions_root(), session_id)
     os.makedirs(current_session_path, exist_ok=True)

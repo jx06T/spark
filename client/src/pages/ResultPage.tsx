@@ -4,8 +4,13 @@ import { QRCodeCanvas } from 'qrcode.react'
 import { useBoothContext } from '../context/BoothContext'
 
 export default function ResultPage() {
-  const { boothState, result } = useBoothContext()
+  const { boothState, result, startSession } = useBoothContext()
   const navigate = useNavigate()
+
+  const handleStartNew = () => {
+    startSession()
+    navigate('/booth')
+  }
 
   useEffect(() => {
     if (boothState !== 5 && !result) navigate('/', { replace: true })
@@ -48,7 +53,7 @@ export default function ResultPage() {
           </a>
 
           <button
-            onClick={() => navigate('/')}
+            onClick={handleStartNew}
             className="border border-white/20 hover:border-pink-500 hover:bg-pink-500/10 py-3 px-8 rounded-full text-sm transition-all w-full"
           >
             START NEW

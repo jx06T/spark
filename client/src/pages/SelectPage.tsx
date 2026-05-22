@@ -42,7 +42,7 @@ export default function SelectPage() {
       {/* Header */}
       <div className="mb-10">
         <h1 className="text-pink-500 text-4xl font-black tracking-widest">CYBERBOOTH</h1>
-        <p className="text-gray-600 text-xs mt-1 uppercase tracking-widest">Select a module to begin</p>
+        <p className="text-gray-600 text-xs mt-1 uppercase tracking-widest">Select a module to begin！</p>
       </div>
 
       {/* Module grid */}
