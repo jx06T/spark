@@ -1,0 +1,586 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="210mm"
+   height="297mm"
+   viewBox="0 0 210 297"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.4.3 (0d15f75, 2025-12-25)"
+   sodipodi:docname="layout.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     showguides="true"
+     inkscape:zoom="0.086524095"
+     inkscape:cx="1086.4026"
+     inkscape:cy="4998.6076"
+     inkscape:window-width="1920"
+     inkscape:window-height="991"
+     inkscape:window-x="-9"
+     inkscape:window-y="1341"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer2">
+    <sodipodi:guide
+       position="1023.4504,-1001.085"
+       orientation="1,0"
+       id="guide42"
+       inkscape:locked="false" />
+    <sodipodi:guide
+       position="744.72789,-1189.9744"
+       orientation="0,-1"
+       id="guide43"
+       inkscape:locked="false" />
+  </sodipodi:namedview>
+  <defs
+     id="defs1">
+    <filter
+       id="selectable_hidder_filter"
+       width="1"
+       height="1"
+       x="0"
+       y="0"
+       style="color-interpolation-filters:sRGB;"
+       inkscape:label="LPE boolean visibility">
+      <feComposite
+         id="boolops_hidder_primitive"
+         result="composite1"
+         operator="arithmetic"
+         in2="SourceGraphic"
+         in="BackgroundImage" />
+    </filter>
+    <inkscape:path-effect
+       effect="bool_op"
+       operand-path="#path43"
+       id="path-effect45"
+       is_visible="true"
+       lpeversion="1"
+       operation="diff"
+       swap-operands="false"
+       filltype-this="from-curve"
+       filter=""
+       filltype-operand="from-curve" />
+    <inkscape:path-effect
+       effect="tiling"
+       id="path-effect44"
+       is_visible="true"
+       lpeversion="1.3.1"
+       unit="px"
+       seed="1;1"
+       lpesatellites=""
+       num_rows="4"
+       num_cols="1"
+       gapx="0"
+       gapy="100"
+       offset="0"
+       offset_type="false"
+       scale="0"
+       rotate="0"
+       mirrorrowsx="false"
+       mirrorrowsy="false"
+       mirrorcolsx="false"
+       mirrorcolsy="false"
+       mirrortrans="false"
+       shrink_interp="false"
+       split_items="false"
+       link_styles="false"
+       interpolate_scalex="false"
+       interpolate_scaley="true"
+       interpolate_rotatex="false"
+       interpolate_rotatey="true"
+       random_scale="false"
+       random_rotate="false"
+       random_gap_y="false"
+       random_gap_x="false"
+       transformorigin="" />
+    <inkscape:path-effect
+       effect="tiling"
+       id="path-effect40"
+       is_visible="true"
+       lpeversion="1.3.1"
+       unit="px"
+       seed="1;1"
+       lpesatellites=""
+       num_rows="4"
+       num_cols="1"
+       gapx="0"
+       gapy="100"
+       offset="0"
+       offset_type="false"
+       scale="0"
+       rotate="0"
+       mirrorrowsx="false"
+       mirrorrowsy="false"
+       mirrorcolsx="false"
+       mirrorcolsy="false"
+       mirrortrans="false"
+       shrink_interp="false"
+       split_items="false"
+       link_styles="false"
+       interpolate_scalex="false"
+       interpolate_scaley="true"
+       interpolate_rotatex="false"
+       interpolate_rotatey="true"
+       random_scale="false"
+       random_rotate="false"
+       random_gap_y="false"
+       random_gap_x="false"
+       transformorigin="" />
+    <inkscape:path-effect
+       effect="tiling"
+       id="path-effect38"
+       is_visible="true"
+       lpeversion="1.3.1"
+       unit="px"
+       seed="1;1"
+       lpesatellites=""
+       num_rows="4"
+       num_cols="1"
+       gapx="0"
+       gapy="100"
+       offset="0"
+       offset_type="false"
+       scale="0"
+       rotate="0"
+       mirrorrowsx="false"
+       mirrorrowsy="false"
+       mirrorcolsx="false"
+       mirrorcolsy="false"
+       mirrortrans="false"
+       shrink_interp="false"
+       split_items="false"
+       link_styles="false"
+       interpolate_scalex="false"
+       interpolate_scaley="true"
+       interpolate_rotatex="false"
+       interpolate_rotatey="true"
+       random_scale="false"
+       random_rotate="false"
+       random_gap_y="false"
+       random_gap_x="false"
+       transformorigin="" />
+    <inkscape:path-effect
+       effect="tiling"
+       id="path-effect36"
+       is_visible="true"
+       lpeversion="1.3.1"
+       unit="px"
+       seed="1;1"
+       lpesatellites=""
+       num_rows="4"
+       num_cols="1"
+       gapx="0"
+       gapy="100"
+       offset="0"
+       offset_type="false"
+       scale="0"
+       rotate="0"
+       mirrorrowsx="false"
+       mirrorrowsy="false"
+       mirrorcolsx="false"
+       mirrorcolsy="false"
+       mirrortrans="false"
+       shrink_interp="false"
+       split_items="false"
+       link_styles="false"
+       interpolate_scalex="false"
+       interpolate_scaley="true"
+       interpolate_rotatex="false"
+       interpolate_rotatey="true"
+       random_scale="false"
+       random_rotate="false"
+       random_gap_y="false"
+       random_gap_x="false"
+       transformorigin="" />
+    <inkscape:path-effect
+       effect="tiling"
+       id="path-effect34"
+       is_visible="true"
+       lpeversion="1.3.1"
+       unit="px"
+       seed="1;1"
+       lpesatellites=""
+       num_rows="4"
+       num_cols="1"
+       gapx="0"
+       gapy="100"
+       offset="0"
+       offset_type="false"
+       scale="0"
+       rotate="0"
+       mirrorrowsx="false"
+       mirrorrowsy="false"
+       mirrorcolsx="false"
+       mirrorcolsy="false"
+       mirrortrans="false"
+       shrink_interp="false"
+       split_items="false"
+       link_styles="false"
+       interpolate_scalex="false"
+       interpolate_scaley="true"
+       interpolate_rotatex="false"
+       interpolate_rotatey="true"
+       random_scale="false"
+       random_rotate="false"
+       random_gap_y="false"
+       random_gap_x="false"
+       transformorigin="" />
+  </defs>
+  <g
+     inkscape:groupmode="layer"
+     id="layer2"
+     inkscape:label="圖層 2"
+     transform="translate(-1.0376974e-6)">
+    <path
+       id="rect27"
+       style="fill:#00ff00;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:5"
+       d="M -767.42832,5.8171299 V 481.84337 h 318.07154 V 5.8171299 Z M -598.26138,21.57275 h 132.29166 V 109.679 h -132.29166 z m -153.48211,0.3912 h 132.29167 v 88.10624 h -132.29167 z m 153.48211,95.56522 h 132.29166 v 88.10625 h -132.29166 z m -153.48211,0.39119 h 132.29167 v 88.10625 h -132.29167 z m 0,95.16009 h 132.29167 v 88.10624 h -132.29167 z m 153.48211,0.40204 h 132.29166 v 88.10676 h -132.29166 z m -153.48211,95.55437 h 132.29167 v 88.10625 h -132.29167 z m 153.48211,0.40256 h 132.29166 v 88.10625 h -132.29166 z" />
+    <g
+       id="g21"
+       data-name="照片位置示意"
+       transform="matrix(0.26458333,0,0,0.26458333,-392.92739,-115.75939)"
+       style="display:inline" />
+    <path
+       id="path27"
+       style="fill:#d3bc5f;stroke-width:4.95417;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:5"
+       d="M 1097.2538,455.15836 V 1634.3174 h 405.4036 V 455.15836 Z m 38.8528,39.9971 h 327.6983 v 218.24695 h -327.6983 z m 0,237.69248 h 327.6983 v 218.24694 h -327.6983 z m 0,235.71992 h 327.6983 v 218.24694 h -327.6983 z m 0,237.69244 h 327.6983 v 218.2469 h -327.6983 z"
+       inkscape:export-filename="t0.png"
+       inkscape:export-xdpi="96"
+       inkscape:export-ydpi="96" />
+    <rect
+       style="fill:#d3bc5f;fill-opacity:1;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:5"
+       id="rect30"
+       width="370.41666"
+       height="846.66669"
+       x="209.74043"
+       y="452.99609" />
+    <path
+       style="fill:#ff0000;fill-opacity:1;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:5"
+       id="rect31"
+       width="285.75"
+       height="160.73438"
+       x="252.07376"
+       y="485.43015"
+       inkscape:path-effect="#path-effect34"
+       sodipodi:type="rect"
+       d="m 252.07376,485.43015 h 285.75 v 160.73437 h -285.75 z m 0,187.1927 h 285.75 v 160.73438 h -285.75 z m 0,187.19271 h 285.75 v 160.73434 h -285.75 z m 0,187.19274 h 285.75 v 160.7343 h -285.75 z" />
+    <rect
+       style="fill:#d3bc5f;fill-opacity:1;stroke-width:2.31458;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:5"
+       id="rect34"
+       width="396.875"
+       height="1058.3334"
+       x="655.67963"
+       y="455.15836" />
+    <path
+       style="fill:#ff0000;fill-opacity:1;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:5"
+       id="path34"
+       width="338.66666"
+       height="190.5"
+       x="252.07376"
+       y="485.43015"
+       inkscape:path-effect="#path-effect36"
+       sodipodi:type="rect"
+       d="m 252.07376,485.43015 h 338.66666 v 190.5 H 252.07376 Z m 0,216.95833 h 338.66666 v 190.5 H 252.07376 Z m 0,216.95833 H 590.74042 V 1109.8468 H 252.07376 Z m 0,216.95829 h 338.66666 v 190.5 H 252.07376 Z"
+       transform="translate(432.71004,1.4782104)" />
+    <rect
+       style="fill:#ff0000;fill-opacity:1;stroke-width:34.0256;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:5"
+       id="rect40"
+       width="261.93738"
+       height="1011.9723"
+       x="655.67963"
+       y="455.15836" />
+    <rect
+       style="fill:#ff0000;fill-opacity:1;stroke-width:1.42858;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:5"
+       id="rect41"
+       width="52.916668"
+       height="52.916668"
+       x="691.81122"
+       y="1434.0577" />
+    <rect
+       style="fill:#ff0000;fill-opacity:1;stroke-width:1.23719;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:5"
+       id="rect42"
+       width="105.83334"
+       height="19.84375"
+       x="917.617"
+       y="1467.1306" />
+    <text
+       xml:space="preserve"
+       style="font-size:22.5778px;line-height:0;font-family:Ubuntu;-inkscape-font-specification:'Ubuntu, Normal';text-decoration-color:#000000;letter-spacing:0.529167px;word-spacing:0px;writing-mode:lr-tb;direction:ltr;text-orientation:upright;fill:#ff0000;fill-opacity:1;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:5;font-weight:normal;font-style:normal;font-stretch:normal;font-variant:normal;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal"
+       x="931.51733"
+       y="1513.4917"
+       id="text43"><tspan
+         sodipodi:role="line"
+         id="tspan43"
+         style="stroke-width:2;-inkscape-font-specification:'Ubuntu, Normal';font-family:Ubuntu;font-weight:normal;font-style:normal;font-stretch:normal;font-variant:normal;font-size:22.57777778px;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal"
+         x="931.51733"
+         y="1513.4917">ss</tspan></text>
+    <path
+       style="fill:#d3bc5f;fill-opacity:1;stroke-width:2.31458;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:5"
+       id="rect43"
+       width="396.875"
+       height="1058.3334"
+       x="-336.80344"
+       y="1183.8442"
+       inkscape:path-effect="#path-effect45"
+       sodipodi:type="rect"
+       d="M -336.80273,1183.8438 V 2242.1777 H 60.072266 V 1183.8438 Z m 29.10351,31.75 H 30.966797 v 190.5 H -307.69922 Z m 0,216.9589 H 30.966797 v 190.5 H -307.69922 Z m 0,216.959 H 30.966797 v 190.5 H -307.69922 Z m 0,216.9571 H 30.966797 v 190.5 H -307.69922 Z"
+       inkscape:export-filename="layout\b.png"
+       inkscape:export-xdpi="96"
+       inkscape:export-ydpi="96" />
+    <path
+       style="fill:#ff0000;fill-opacity:1;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:5;filter:url(#selectable_hidder_filter)"
+       id="path43"
+       width="338.66666"
+       height="190.5"
+       x="252.07376"
+       y="485.43015"
+       inkscape:path-effect="#path-effect44"
+       sodipodi:type="rect"
+       d="m 252.07376,485.43015 h 338.66666 v 190.5 H 252.07376 Z m 0,216.95833 h 338.66666 v 190.5 H 252.07376 Z m 0,216.95833 H 590.74042 V 1109.8468 H 252.07376 Z m 0,216.95829 h 338.66666 v 190.5 H 252.07376 Z"
+       transform="translate(-559.77302,730.16403)" />
+  </g>
+  <g
+     inkscape:label="圖層 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <g
+       id="_設計區域"
+       data-name="設計區域"
+       transform="matrix(0.26458333,0,0,0.26458333,259.93746,-115.75939)">
+      <g
+         id="g4">
+        <polyline
+           points="1167.5 1756.5 1167.5 1762.5 1161.5 1762.5"
+           style="fill:none;stroke:#ff0000;stroke-miterlimit:10"
+           id="polyline1" />
+        <line
+           x1="1149.59"
+           y1="1762.5"
+           x2="12.45"
+           y2="1762.5"
+           style="fill:none;stroke:#ff0000;stroke-miterlimit:10;stroke-dasharray:11.91, 11.91"
+           id="line1" />
+        <polyline
+           points="6.5 1762.5 .5 1762.5 .5 1756.5"
+           style="fill:none;stroke:#ff0000;stroke-miterlimit:10"
+           id="polyline2" />
+        <line
+           x1="0.5"
+           y1="1744.4301"
+           x2="0.5"
+           y2="12.53"
+           style="fill:none;stroke:#ff0000;stroke-miterlimit:10;stroke-dasharray:12.07, 12.07"
+           id="line2" />
+        <polyline
+           points=".5 6.5 .5 .5 6.5 .5"
+           style="fill:none;stroke:#ff0000;stroke-miterlimit:10"
+           id="polyline3" />
+        <line
+           x1="18.41"
+           y1="0.5"
+           x2="1155.55"
+           y2="0.5"
+           style="fill:none;stroke:#ff0000;stroke-miterlimit:10;stroke-dasharray:11.91, 11.91"
+           id="line3" />
+        <polyline
+           points="1161.5 .5 1167.5 .5 1167.5 6.5"
+           style="fill:none;stroke:#ff0000;stroke-miterlimit:10"
+           id="polyline4" />
+        <line
+           x1="1167.5"
+           y1="18.57"
+           x2="1167.5"
+           y2="1750.47"
+           style="fill:none;stroke:#ff0000;stroke-miterlimit:10;stroke-dasharray:12.07, 12.07"
+           id="line4" />
+      </g>
+    </g>
+    <g
+       id="_照片位置示意"
+       data-name="照片位置示意"
+       transform="matrix(0.26458333,0,0,0.26458333,259.93746,-115.75939)">
+      <rect
+         x="623.84003"
+         y="41.470001"
+         width="500"
+         height="333"
+         style="fill:#e6e6e6"
+         id="rect4" />
+      <rect
+         x="623.84003"
+         y="1129.47"
+         width="500"
+         height="333"
+         style="fill:#e6e6e6"
+         id="rect5" />
+      <rect
+         x="623.84003"
+         y="404.14001"
+         width="500"
+         height="333"
+         style="fill:#e6e6e6"
+         id="rect6" />
+      <rect
+         x="623.84003"
+         y="766.79999"
+         width="500"
+         height="333"
+         style="fill:#e6e6e6"
+         id="rect7" />
+      <rect
+         x="43.75"
+         y="1127.95"
+         width="500"
+         height="333"
+         style="fill:#e6e6e6"
+         id="rect8" />
+      <rect
+         x="43.75"
+         y="765.28003"
+         width="500"
+         height="333"
+         style="fill:#e6e6e6"
+         id="rect9" />
+      <rect
+         x="43.75"
+         y="405.62"
+         width="500"
+         height="333"
+         style="fill:#e6e6e6"
+         id="rect10" />
+      <rect
+         x="43.75"
+         y="42.950001"
+         width="500"
+         height="333"
+         style="fill:#e6e6e6"
+         id="rect11" />
+    </g>
+    <g
+       id="QR位置_不動_"
+       data-name="QR位置(不動)"
+       transform="matrix(0.26458333,0,0,0.26458333,259.93746,-115.75939)">
+      <rect
+         x="43.75"
+         y="1653.97"
+         width="80"
+         height="80"
+         style="fill:#e6e6e6"
+         id="rect12" />
+      <rect
+         x="1043.84"
+         y="1653.97"
+         width="80"
+         height="80"
+         style="fill:#e6e6e6"
+         id="rect13" />
+    </g>
+    <g
+       id="g9"
+       data-name="設計區域"
+       transform="matrix(0.27325714,0,0,0.27016245,254.87195,-120.67738)"
+       style="display:inline">
+      <g
+         id="g8">
+        <polyline
+           points="1167.5 1756.5 1167.5 1762.5 1161.5 1762.5"
+           style="fill:none;stroke:#ff0000;stroke-miterlimit:10"
+           id="polyline5" />
+        <line
+           x1="1149.59"
+           y1="1762.5"
+           x2="12.45"
+           y2="1762.5"
+           style="fill:none;stroke:#ff0000;stroke-miterlimit:10;stroke-dasharray:11.91, 11.91"
+           id="line5" />
+        <polyline
+           points="6.5 1762.5 .5 1762.5 .5 1756.5"
+           style="fill:none;stroke:#ff0000;stroke-miterlimit:10"
+           id="polyline6" />
+        <line
+           x1="0.5"
+           y1="1744.4301"
+           x2="0.5"
+           y2="12.53"
+           style="fill:none;stroke:#ff0000;stroke-miterlimit:10;stroke-dasharray:12.07, 12.07"
+           id="line6" />
+        <polyline
+           points=".5 6.5 .5 .5 6.5 .5"
+           style="fill:none;stroke:#ff0000;stroke-miterlimit:10"
+           id="polyline7" />
+        <line
+           x1="18.41"
+           y1="0.5"
+           x2="1155.55"
+           y2="0.5"
+           style="fill:none;stroke:#ff0000;stroke-miterlimit:10;stroke-dasharray:11.91, 11.91"
+           id="line7" />
+        <polyline
+           points="1161.5 .5 1167.5 .5 1167.5 6.5"
+           style="fill:none;stroke:#ff0000;stroke-miterlimit:10"
+           id="polyline8" />
+        <line
+           x1="1167.5"
+           y1="18.57"
+           x2="1167.5"
+           y2="1750.47"
+           style="fill:none;stroke:#ff0000;stroke-miterlimit:10;stroke-dasharray:12.07, 12.07"
+           id="line8" />
+      </g>
+    </g>
+    <g
+       id="g27"
+       data-name="設計區域"
+       transform="matrix(0.27325714,0,0,0.27016245,-397.99291,-120.67738)"
+       style="fill:none">
+      <g
+         id="g26"
+         style="fill:none">
+        <path
+           id="polyline23"
+           style="stroke:#ff0000;stroke-miterlimit:10"
+           d="m 1167.5,1756.5 v 6 h -6" />
+        <path
+           id="line23"
+           style="stroke:#ff0000;stroke-miterlimit:10;stroke-dasharray:11.91, 11.91"
+           d="M 1149.59,1762.5 H 12.45" />
+        <path
+           id="polyline24"
+           style="stroke:#ff0000;stroke-miterlimit:10"
+           d="m 6.5,1762.5 h -6 v -6" />
+        <path
+           id="line24"
+           style="stroke:#ff0000;stroke-miterlimit:10;stroke-dasharray:12.07, 12.07"
+           d="M 0.5,1744.4301 V 12.53" />
+        <path
+           id="polyline25"
+           style="stroke:#ff0000;stroke-miterlimit:10"
+           d="m 0.5,6.5 v -6 h 6" />
+        <path
+           id="line25"
+           style="stroke:#ff0000;stroke-miterlimit:10;stroke-dasharray:11.91, 11.91"
+           d="M 18.41,0.5 H 1155.55" />
+        <path
+           id="polyline26"
+           style="stroke:#ff0000;stroke-miterlimit:10"
+           d="m 1161.5,0.5 h 6 v 6" />
+        <path
+           id="line26"
+           style="stroke:#ff0000;stroke-miterlimit:10;stroke-dasharray:12.07, 12.07"
+           d="m 1167.5,18.57 v 1731.9" />
+      </g>
+    </g>
+  </g>
+</svg>
