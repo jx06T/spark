@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { BoothProvider } from './context/BoothContext'
 import SelectPage from './pages/SelectPage'
+import LayoutPage from './pages/LayoutPage'
 import BoothPage from './pages/BoothPage'
 import ResultPage from './pages/ResultPage'
 import RemotePage from './pages/RemotePage'
@@ -11,6 +12,7 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<SelectPage />} />
+          <Route path="/layout" element={<LayoutPage />} />
           <Route path="/booth" element={<BoothPage />} />
           <Route path="/result" element={<ResultPage />} />
           <Route path="/remote" element={<RemotePage />} />

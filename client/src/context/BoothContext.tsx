@@ -1,16 +1,25 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { io } from 'socket.io-client'
-import type { BoothLayout, BoothModule, BoothResult, BoothState, StatusUpdatePayload } from '../types/booth'
+import type {
+  BoothCapabilities, BoothLayout, BoothModule, BoothResult, BoothState,
+  CaptureMode, StatusUpdatePayload,
+} from '../types/booth'
 
 const socket = io()
+
+const DEFAULT_CAPABILITIES: BoothCapabilities = {
+  capture: { modes: ['instant'], timedDurations: [] },
+  output: { types: ['image'] },
+}
 
 interface BoothContextValue {
   boothState: BoothState
   message: string
   kept: number
   countdown: number | null
-  mode: 'recording' | 'snapshot'
-  capabilities: { recording: boolean; snapshot: boolean }
+  captureMode: CaptureMode
+  timedDuration: number | null
+  capabilities: BoothCapabilities
   modules: BoothModule[]
   currentModule: string
   currentModuleLayouts: BoothLayout[]
@@ -23,11 +32,12 @@ interface BoothContextValue {
   keepPhoto: () => void
   retakePhoto: () => void
   finishEarly: () => void
-  setCaptureMode: (mode: 'recording' | 'snapshot') => void
+  setCaptureMode: (mode: CaptureMode) => void
+  setTimedDuration: (duration: number) => void
   setLayout: (layoutId: string) => void
   setModule: (moduleId: string) => void
   reset: () => void
-  startSession: (data?: { moduleId?: string; mode?: 'recording' | 'snapshot' }) => void
+  startSession: (data?: { moduleId?: string; captureMode?: CaptureMode; timedDuration?: number; layoutId?: string }) => void
 }
 
 const BoothContext = createContext<BoothContextValue | null>(null)
@@ -37,8 +47,9 @@ export function BoothProvider({ children }: { children: ReactNode }) {
   const [message, setMessage] = useState('CONNECTING...')
   const [kept, setKept] = useState(0)
   const [countdown, setCountdown] = useState<number | null>(null)
-  const [mode, setMode] = useState<'recording' | 'snapshot'>('recording')
-  const [capabilities, setCapabilities] = useState({ recording: false, snapshot: false })
+  const [captureMode, setCaptureMode_] = useState<CaptureMode>('instant')
+  const [timedDuration, setTimedDuration_] = useState<number | null>(null)
+  const [capabilities, setCapabilities] = useState<BoothCapabilities>(DEFAULT_CAPABILITIES)
   const [modules, setModules] = useState<BoothModule[]>([])
   const [currentModule, setCurrentModule] = useState('')
   const [currentLayoutId, setCurrentLayoutId] = useState('')
@@ -60,13 +71,12 @@ export function BoothProvider({ children }: { children: ReactNode }) {
       if (data.message) setMessage(data.message.toUpperCase())
       if (data.kept !== undefined) setKept(data.kept)
       setCountdown(data.countdown ?? null)
-      if (data.mode) setMode(data.mode)
+      if (data.captureMode) setCaptureMode_(data.captureMode)
+      if (data.timedDuration !== undefined) setTimedDuration_(data.timedDuration ?? null)
       if (data.capabilities) setCapabilities(data.capabilities)
       if (data.modules) setModules(data.modules)
       if (data.currentModule) setCurrentModule(data.currentModule)
-      if (data.message?.startsWith('Layout:')) {
-        setCurrentLayoutId(data.message.replace('Layout:', '').trim())
-      }
+      if (data.currentLayoutId) setCurrentLayoutId(data.currentLayoutId)
       if (data.currentFile) setCurrentFile(data.currentFile)
       if (data.previewUrl) setPreviewUrl(data.previewUrl)
       if (data.result) setResult(data.result)
@@ -84,7 +94,8 @@ export function BoothProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const value: BoothContextValue = {
-    boothState, message, kept, countdown, mode, capabilities,
+    boothState, message, kept, countdown,
+    captureMode, timedDuration, capabilities,
     modules, currentModule, currentModuleLayouts, currentLayoutId,
     previewUrl, result, isConnected,
     triggerShot: () => socket.emit('trigger_shot'),
@@ -92,7 +103,8 @@ export function BoothProvider({ children }: { children: ReactNode }) {
     keepPhoto: () => socket.emit('choice_keep', { filename: currentFile }),
     retakePhoto: () => socket.emit('choice_retake'),
     finishEarly: () => socket.emit('user_clicked_finish_early'),
-    setCaptureMode: (m) => socket.emit('set_capture_mode', { mode: m }),
+    setCaptureMode: (mode) => socket.emit('set_capture_mode', { mode }),
+    setTimedDuration: (duration) => socket.emit('set_timed_duration', { duration }),
     setLayout: (layoutId) => socket.emit('set_layout', { layoutId }),
     setModule: (moduleId) => socket.emit('set_module', { moduleId }),
     reset: () => socket.emit('user_clicked_reset'),

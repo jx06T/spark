@@ -3,7 +3,7 @@ import { useConfirm } from '../hooks/useConfirm'
 
 export default function RemotePage() {
   const {
-    boothState, message, kept, countdown, mode, capabilities,
+    boothState, message, kept, countdown, captureMode, capabilities,
     modules, currentModule, currentModuleLayouts, currentLayoutId,
     triggerShot, stopRecording, keepPhoto, retakePhoto, finishEarly,
     setCaptureMode, setLayout, setModule, reset,
@@ -95,9 +95,16 @@ export default function RemotePage() {
               FINISH EARLY
             </button>
           )}
-          {capabilities.recording && capabilities.snapshot && (
-            <button onClick={() => setCaptureMode(mode === 'recording' ? 'snapshot' : 'recording')} className="bg-white/10 px-4 py-2 rounded-full text-xs active:bg-white/20">
-              {mode === 'snapshot' ? 'SNAPSHOT' : 'RECORDING'}
+          {capabilities.capture.modes.length > 1 && (
+            <button
+              onClick={() => {
+                const modes = capabilities.capture.modes
+                const next = modes[(modes.indexOf(captureMode) + 1) % modes.length]
+                setCaptureMode(next)
+              }}
+              className="bg-white/10 px-4 py-2 rounded-full text-xs active:bg-white/20"
+            >
+              {captureMode.toUpperCase()}
             </button>
           )}
           {currentModuleLayouts.length >= 1 && (

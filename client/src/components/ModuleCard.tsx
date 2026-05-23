@@ -7,6 +7,7 @@ interface Props {
 }
 
 export function ModuleCard({ module, selected, onClick }: Props) {
+  const modes = module.capabilities.capture.modes
   return (
     <button
       onClick={onClick}
@@ -39,17 +40,12 @@ export function ModuleCard({ module, selected, onClick }: Props) {
       </div>
       <div className="p-3 bg-gray-900/90">
         <p className="font-bold text-sm text-white">{module.name}</p>
-        <div className="flex gap-2 mt-1.5">
-          {module.capabilities.recording && (
-            <span className="text-[10px] text-gray-400 border border-gray-600 px-1.5 py-0.5 rounded uppercase tracking-wider">
-              REC
+        <div className="flex gap-2 mt-1.5 flex-wrap">
+          {modes.map(m => (
+            <span key={m} className="text-[10px] text-gray-400 border border-gray-600 px-1.5 py-0.5 rounded uppercase tracking-wider">
+              {m === 'instant' ? 'SNAP' : m === 'timed' ? 'TIMED' : 'REC'}
             </span>
-          )}
-          {module.capabilities.snapshot && (
-            <span className="text-[10px] text-gray-400 border border-gray-600 px-1.5 py-0.5 rounded uppercase tracking-wider">
-              SNAP
-            </span>
-          )}
+          ))}
         </div>
       </div>
     </button>

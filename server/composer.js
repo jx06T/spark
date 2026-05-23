@@ -25,7 +25,7 @@ async function generateFinalCollage(sessionID, photoFilenames, layout) {
 
         const photoLayers = await Promise.all(
             photoPaths.map(async (photoPath, i) => {
-                const slot = layout.photo_slots[i];
+                const slot = (layout.slots || layout.photo_slots)[i];
                 if (!fs.existsSync(photoPath)) {
                     console.warn(`[Composer] Warning: File not found ${photoPath}`);
                     return null;
