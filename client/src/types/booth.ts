@@ -17,6 +17,7 @@ export interface BoothCapabilities {
 export interface BoothLayout {
   id: string
   label: string
+  previewUrl?: string
 }
 
 export interface BoothModule {
@@ -30,6 +31,13 @@ export interface BoothModule {
 export interface BoothResult {
   localPath: string
   publicUrl: string
+}
+
+// Per-slot capture config resolved by the server
+export interface ClientSlot {
+  capture: CaptureMode
+  timedDuration: number | null
+  type: OutputType
 }
 
 export interface StatusUpdatePayload {
@@ -46,4 +54,5 @@ export interface StatusUpdatePayload {
   currentFile?: string
   previewUrl?: string
   result?: BoothResult
+  slots?: ClientSlot[]
 }

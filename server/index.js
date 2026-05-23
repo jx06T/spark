@@ -4,6 +4,7 @@ const { Server } = require('socket.io');
 const axios = require('axios');
 const path = require('path');
 const fs = require('fs');
+const { execFile } = require('child_process');
 
 const app = express();
 const server = http.createServer(app);
@@ -41,8 +42,18 @@ function resolveSlots(layout, capabilities) {
     return (layout.slots || []).map(slot => {
         const declaredType = slot.type || 'image';
         const effectiveType = (declaredType === 'video' && !supportsVideo) ? 'image' : declaredType;
-        return { ...slot, effectiveType };
+        const capture = slot.capture || 'instant';
+        const timedDuration = slot.timedDuration ?? null;
+        return { ...slot, effectiveType, capture, timedDuration };
     });
+}
+
+function clientSlots() {
+    return activeSlots.map(s => ({
+        capture: s.capture,
+        timedDuration: s.timedDuration,
+        type: s.effectiveType,
+    }));
 }
 
 function loadModuleManifest(moduleName, layoutId = null) {
@@ -71,7 +82,11 @@ function scanAvailableModules() {
                 id: name,
                 name: manifest.name,
                 capabilities: manifest.capabilities,
-                layouts: manifest.layouts.map(l => ({ id: l.id, label: l.label })),
+                layouts: manifest.layouts.map(l => ({
+                        id: l.id,
+                        label: l.label,
+                        previewUrl: l.preview ? `/module-assets/${name}/${l.preview}` : undefined,
+                    })),
                 previewUrl: `/module-assets/${name}/${manifest.preview_image || 'preview.jpg'}`
             };
         });
@@ -105,6 +120,7 @@ function broadcastStatusUpdate(payload) {
         captureMode,
         timedDuration,
         currentLayoutId: activeLayout?.id ?? '',
+        slots: clientSlots(),
     });
 }
 
@@ -124,25 +140,33 @@ async function runCountdown() {
     await sleep(1000);
 
     try {
-        if (captureMode === 'instant') {
+        const currentSlot = activeSlots[selectedPhotos.length];
+        const isVideoSlot = currentSlot?.effectiveType === 'video';
+        const slotCapture = currentSlot?.capture ?? 'instant';
+        const slotDuration = currentSlot?.timedDuration ?? null;
+
+        if (slotCapture === 'instant') {
             broadcastStatusUpdate({ message: 'Capturing...', state: 1 });
             await axios.post(`${TD_URL}/capture_snapshot`, {}, { timeout: 3000 });
         } else {
             // manual or timed — both start recording
-            broadcastStatusUpdate({ message: 'DRAW NOW!', state: 0 });
-            await axios.post(`${TD_URL}/start_recording`, {}, { timeout: 3000 });
+            broadcastStatusUpdate({ message: isVideoSlot ? 'RECORDING!' : 'DRAW NOW!', state: 0 });
+            const startEndpoint = isVideoSlot ? '/start_video_record' : '/start_recording';
+            await axios.post(`${TD_URL}${startEndpoint}`, {}, { timeout: 3000 });
 
-            if (captureMode === 'timed' && timedDuration) {
+            if (slotCapture === 'timed' && slotDuration) {
                 timedStopTimer = setTimeout(async () => {
                     timedStopTimer = null;
                     if (currentSystemState === 0) {
                         try {
-                            await axios.post(`${TD_URL}/stop_and_save`, {}, { timeout: 3000 });
+                            const stopEndpoint = isVideoSlot ? '/stop_video_record' : '/stop_and_save';
+                            await axios.post(`${TD_URL}${stopEndpoint}`, {}, { timeout: 3000 });
+                            broadcastStatusUpdate({ message: 'Processing...', state: 1 });
                         } catch (e) {
                             console.error('Timed auto-stop error:', e.message);
                         }
                     }
-                }, timedDuration * 1000);
+                }, slotDuration * 1000);
             }
         }
     } catch (e) {
@@ -193,6 +217,7 @@ io.on('connection', (socket) => {
         modules: availableModules,
         currentModule: activeModuleName,
         currentLayoutId: activeLayout?.id ?? '',
+        slots: clientSlots(),
     });
 
     socket.on('user_clicked_start', async (data) => {
@@ -285,7 +310,11 @@ io.on('connection', (socket) => {
         cancelTimedStop();
         console.log('Stop and save requested');
         try {
-            await axios.post(`${TD_URL}/stop_and_save`, {}, { timeout: 3000 });
+            const currentSlot = activeSlots[selectedPhotos.length];
+            const isVideo = currentSlot?.effectiveType === 'video';
+            const stopEndpoint = isVideo ? '/stop_video_record' : '/stop_and_save';
+            await axios.post(`${TD_URL}${stopEndpoint}`, {}, { timeout: 3000 });
+            broadcastStatusUpdate({ message: 'Processing...', state: 1 });
         } catch (e) {
             console.error('TD error:', e.response?.status);
         }
@@ -302,7 +331,7 @@ io.on('connection', (socket) => {
             console.log('Session complete. List:', selectedPhotos);
 
             try {
-                const result = await generateFinalCollage(currentSessionID, selectedPhotos, activeLayout);
+                const result = await generateFinalCollage(currentSessionID, selectedPhotos, activeLayout, activeSlots);
                 if (!result.publicUrl) result.publicUrl = `sessions/${currentSessionID}/collage.jpg`;
                 broadcastStatusUpdate({ message: 'Finished', state: 5, result });
             } catch (e) {
@@ -345,7 +374,7 @@ io.on('connection', (socket) => {
         }
 
         try {
-            const result = await generateFinalCollage(currentSessionID, selectedPhotos, activeLayout);
+            const result = await generateFinalCollage(currentSessionID, selectedPhotos, activeLayout, activeSlots);
             if (!result.publicUrl) result.publicUrl = `sessions/${currentSessionID}/collage.jpg`;
             broadcastStatusUpdate({ message: 'Finished', state: 5, result });
         } catch (e) {
@@ -356,14 +385,47 @@ io.on('connection', (socket) => {
     });
 });
 
+function transcodeToMp4(inputPath, outputPath) {
+    return new Promise((resolve, reject) => {
+        const t0 = Date.now();
+        console.log(`[transcode] start: ${path.basename(inputPath)}`);
+        execFile('ffmpeg', [
+            '-i', inputPath,
+            '-c:v', 'libx264',
+            '-preset', 'ultrafast',
+            '-crf', '23',
+            '-an', '-y',
+            outputPath,
+        ], (err, _stdout, stderr) => {
+            if (err) { console.error('[transcode] failed:', stderr); reject(err); }
+            else { console.log(`[transcode] done in ${((Date.now() - t0) / 1000).toFixed(1)}s`); resolve(); }
+        });
+    });
+}
+
 // TD Webhooks
-app.post('/td_state_update', (req, res) => {
+app.post('/td_state_update', async (req, res) => {
+    res.send('ok');
     const body = req.body;
+
     if (body.state === 4 && body.currentFile) {
+        const isVideo = /\.(mov|avi)$/i.test(body.currentFile);
+        if (isVideo) {
+            const sessionDir = path.join(ROOT, 'sessions', currentSessionID);
+            const inputPath = path.join(sessionDir, body.currentFile);
+            const mp4Name = body.currentFile.replace(/\.[^.]+$/, '.mp4');
+            const outputPath = path.join(sessionDir, mp4Name);
+            try {
+                await transcodeToMp4(inputPath, outputPath);
+                body.currentFile = mp4Name;
+            } catch (e) {
+                console.error('[transcode] failed, using original:', e.message);
+            }
+        }
         body.previewUrl = `/sessions/${currentSessionID}/${body.currentFile}`;
     }
+
     broadcastStatusUpdate(body);
-    res.send('ok');
 });
 
 app.post('/td_trigger_shot', async (req, res) => {

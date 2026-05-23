@@ -33,6 +33,9 @@ def _processing_module():
 def _final_output():
     return _root().op('video_pipeline/out_module/final_output')
 
+def _movie_out():
+    return _root().op('video_pipeline/out_module/final_movie_output')
+
 def _sessions_root():
     # project.folder = .../spark/TD/  →  sessions/ 在一層上
     return os.path.normpath(os.path.join(project.folder, '..', 'sessions'))
@@ -67,6 +70,8 @@ def onHTTPRequest(webServerDAT, request, response):
         '/start_recording':        _handle_start_recording,
         '/capture_snapshot':       _handle_capture_snapshot,
         '/stop_and_save':          _handle_stop_and_save,
+        '/start_video_record':     _handle_start_video_record,
+        '/stop_video_record':      _handle_stop_video_record,
         '/ready_for_next_attempt': _handle_ready_for_next_attempt,
         '/reset':                  _handle_reset,
         '/set_module':             _handle_set_module,
@@ -102,6 +107,32 @@ def _handle_capture_snapshot(body):
 def _handle_stop_and_save(body):
     _set_state(1)   # FINISHED (存檔中) — processing_module 自己凍結輸出
     _schedule_save()
+
+def _handle_start_video_record(body):
+    global attempt_count
+    attempt_count += 1
+    filename = f'raw_{attempt_count}.mov'
+    filepath = os.path.join(current_session_path, filename)
+
+    mo = _movie_out()
+    mo.par.record = 0 # 【新增】安全機制：確保先關閉舊的
+    
+    mo.par.file = filepath.replace('\\', '/') 
+    
+    mo.par.record = 1
+    _set_photo_index(attempt_count)
+    _set_state(0)  # RECORDING
+    print(f'[comm_server] video record started => {filename}')
+
+def _handle_stop_video_record(body):
+    _movie_out().par.record = 0
+    _set_state(1)  # PROCESSING
+
+    filename = f'raw_{attempt_count}.mov'
+    run("me.module.notify_node(args[0], args[1])",
+        attempt_count, filename,
+        delayFrames=30)
+    print(f'[comm_server] video record stopped => {filename}')
 
 def _handle_ready_for_next_attempt(body):
     _set_state(2)   # IDLE

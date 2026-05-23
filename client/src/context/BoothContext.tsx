@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useMemo, useState, type ReactNode
 import { io } from 'socket.io-client'
 import type {
   BoothCapabilities, BoothLayout, BoothModule, BoothResult, BoothState,
-  CaptureMode, StatusUpdatePayload,
+  CaptureMode, ClientSlot, StatusUpdatePayload,
 } from '../types/booth'
 
 const socket = io()
@@ -27,6 +27,7 @@ interface BoothContextValue {
   previewUrl: string | null
   result: BoothResult | null
   isConnected: boolean
+  activeSlots: ClientSlot[]
   triggerShot: () => void
   stopRecording: () => void
   keepPhoto: () => void
@@ -37,7 +38,7 @@ interface BoothContextValue {
   setLayout: (layoutId: string) => void
   setModule: (moduleId: string) => void
   reset: () => void
-  startSession: (data?: { moduleId?: string; captureMode?: CaptureMode; timedDuration?: number; layoutId?: string }) => void
+  startSession: (data?: { moduleId?: string; layoutId?: string }) => void
 }
 
 const BoothContext = createContext<BoothContextValue | null>(null)
@@ -57,6 +58,7 @@ export function BoothProvider({ children }: { children: ReactNode }) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [result, setResult] = useState<BoothResult | null>(null)
   const [isConnected, setIsConnected] = useState(false)
+  const [activeSlots, setActiveSlots] = useState<ClientSlot[]>([])
 
   const currentModuleLayouts = useMemo(() => {
     const mod = modules.find(m => m.id === currentModule)
@@ -80,6 +82,7 @@ export function BoothProvider({ children }: { children: ReactNode }) {
       if (data.currentFile) setCurrentFile(data.currentFile)
       if (data.previewUrl) setPreviewUrl(data.previewUrl)
       if (data.result) setResult(data.result)
+      if (data.slots) setActiveSlots(data.slots)
     }
 
     socket.on('connect', onConnect)
@@ -97,7 +100,7 @@ export function BoothProvider({ children }: { children: ReactNode }) {
     boothState, message, kept, countdown,
     captureMode, timedDuration, capabilities,
     modules, currentModule, currentModuleLayouts, currentLayoutId,
-    previewUrl, result, isConnected,
+    previewUrl, result, isConnected, activeSlots,
     triggerShot: () => socket.emit('trigger_shot'),
     stopRecording: () => socket.emit('user_clicked_stop'),
     keepPhoto: () => socket.emit('choice_keep', { filename: currentFile }),
@@ -112,7 +115,7 @@ export function BoothProvider({ children }: { children: ReactNode }) {
       setBoothState(2)
       setResult(null)
       setKept(0)
-      socket.emit('user_clicked_start', data ?? {})
+      socket.emit('user_clicked_start', { moduleId: data?.moduleId, layoutId: data?.layoutId })
     },
   }
 
