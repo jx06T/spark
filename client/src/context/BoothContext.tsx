@@ -29,6 +29,10 @@ interface BoothContextValue {
   isConnected: boolean
   activeSlots: ClientSlot[]
   triggerShot: () => void
+  videoStream: MediaStream | null // 將 videoStream 暴露給 Context，但不直接管理其「準備好」狀態
+  isCameraStreamActive: boolean   // 表示串流是否已在 UI 中啟動並播放
+  setCameraStreamActive: (active: boolean) => void // 允許 UI 更新串流活動狀態
+  cameraError: boolean            // 將 cameraError 暴露給 Context
   stopRecording: () => void
   keepPhoto: () => void
   retakePhoto: () => void
@@ -58,6 +62,11 @@ export function BoothProvider({ children }: { children: ReactNode }) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [result, setResult] = useState<BoothResult | null>(null)
   const [isConnected, setIsConnected] = useState(false)
+  // 將相機狀態移到 Context 中
+  const [videoStream, setVideoStream] = useState<MediaStream | null>(null)
+  // isCameraStreamActive 表示串流是否已在 UI 中啟動並播放
+  const [isCameraStreamActive, setIsCameraStreamActive] = useState(false)
+  const [cameraError, setCameraError] = useState(false)
   const [activeSlots, setActiveSlots] = useState<ClientSlot[]>([])
 
   const currentModuleLayouts = useMemo(() => {
@@ -89,18 +98,33 @@ export function BoothProvider({ children }: { children: ReactNode }) {
     socket.on('disconnect', onDisconnect)
     socket.on('status_update', onStatusUpdate)
 
+    // 相機初始化邏輯，在 BoothProvider 掛載時執行一次
+    let stream: MediaStream | null = null
+    navigator.mediaDevices
+      .getUserMedia({ video: { width: 1280, height: 720 } })
+      .then(s => {
+        stream = s
+        setVideoStream(s) // 將串流儲存到 Context 狀態
+      })
+      .catch((e) => {
+        console.error("Camera access error:", e);
+        setCameraError(true); // 設定相機錯誤狀態
+      })
+
     return () => {
       socket.off('connect', onConnect)
       socket.off('disconnect', onDisconnect)
       socket.off('status_update', onStatusUpdate)
+      // 在 BoothProvider 卸載時（即整個應用程式關閉或重新整理時）停止串流
+      stream?.getTracks().forEach(t => t.stop())
     }
   }, [])
 
   const value: BoothContextValue = {
     boothState, message, kept, countdown,
     captureMode, timedDuration, capabilities,
-    modules, currentModule, currentModuleLayouts, currentLayoutId,
-    previewUrl, result, isConnected, activeSlots,
+    modules, currentModule, currentModuleLayouts, currentLayoutId, previewUrl, result,
+    isConnected, activeSlots, videoStream, isCameraStreamActive, setCameraStreamActive: setIsCameraStreamActive, cameraError, // 暴露相機狀態和更新函數
     triggerShot: () => socket.emit('trigger_shot'),
     stopRecording: () => socket.emit('user_clicked_stop'),
     keepPhoto: () => socket.emit('choice_keep', { filename: currentFile }),
@@ -118,6 +142,7 @@ export function BoothProvider({ children }: { children: ReactNode }) {
 
       setBoothState(2)
       setResult(null)
+      setPreviewUrl(null) // 清除上一場的預覽，觸發 UI 進入 Initializing 狀態（如果這是預期的）
       setKept(0)
       socket.emit('user_clicked_start', { moduleId, layoutId })
     },

@@ -84,10 +84,10 @@ function scanAvailableModules() {
                 name: manifest.name,
                 capabilities: manifest.capabilities,
                 layouts: manifest.layouts.map(l => ({
-                        id: l.id,
-                        label: l.label,
-                        previewUrl: l.preview ? `/module-assets/${name}/${l.preview}` : undefined,
-                    })),
+                    id: l.id,
+                    label: l.label,
+                    previewUrl: l.preview ? `/module-assets/${name}/${l.preview}` : undefined,
+                })),
                 previewUrl: `/module-assets/${name}/${manifest.preview_image || 'preview.jpg'}`
             };
         });
@@ -257,16 +257,12 @@ io.on('connection', (socket) => {
         if (data?.captureMode) captureMode = data.captureMode;
         if (data?.timedDuration != null) timedDuration = data.timedDuration;
 
-        // 現在執行純粹的會話重置，不再傳遞模組資訊給 TD 的 /reset
+        // 2. 執行重置，但不阻塞最後的成功廣播
+        // 這裡可以先更新 SessionID 並加載佈局
         await systemFullReset();
-        const caps = availableModules.find(m => m.id === activeModuleName)?.capabilities;
-        broadcastStatusUpdate({
-            message: 'Ready for new session',
-            state: 2,
-            kept: 0,
-            capabilities: caps,
-            currentModule: activeModuleName,
-        });
+
+        // 3. 發送正式 Ready 訊號
+        broadcastStatusUpdate({ message: 'Ready for new session' ,state: 2, kept: selectedPhotos.length});
     });
 
     socket.on('trigger_shot', async () => {

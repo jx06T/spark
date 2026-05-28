@@ -7,42 +7,37 @@ export default function BoothPage() {
   const {
     boothState, message, kept, countdown,
     triggerShot, stopRecording, keepPhoto, retakePhoto, finishEarly, reset,
-    previewUrl, activeSlots,
+    previewUrl, activeSlots, videoStream, isCameraStreamActive, setCameraStreamActive, cameraError, // 從 Context 獲取相機狀態和更新函數
   } = useBoothContext()
   const navigate = useNavigate()
   const videoRef = useRef<HTMLVideoElement>(null)
-  const [isCameraReady, setIsCameraReady] = useState(false)
-  const [cameraError, setCameraError] = useState(false)
-  const [recordingTimeLeft, setRecordingTimeLeft] = useState<number | null>(null)
-  const { confirm, modal } = useConfirm()
+  const [recordingTimeLeft, setRecordingTimeLeft] = useState<number | null>(null) // 保持本地狀態
+  const { confirm, modal } = useConfirm() // 保持本地狀態
 
   // Navigate to result when done
   useEffect(() => {
     if (boothState === 5) navigate('/result')
   }, [boothState, navigate])
 
-  // Camera init
+  // 當 video 元素和 videoStream 都準備好時，將串流賦予 video 元素
   useEffect(() => {
-    let stream: MediaStream | null = null
-    navigator.mediaDevices
-      .getUserMedia({ video: { width: 1280, height: 720 } })
-      .then(s => {
-        stream = s
-        const video = videoRef.current
-        if (!video) return
-        video.srcObject = s
-        video.onloadedmetadata = () => {
-          video.play()
-          setIsCameraReady(true)
-        }
-        if (video.readyState >= 1) {
-          video.play()
-          setIsCameraReady(true)
-        }
-      })
-      .catch(() => setCameraError(true))
-    return () => stream?.getTracks().forEach(t => t.stop())
-  }, [])
+    const video = videoRef.current
+    if (video && videoStream) {
+      video.srcObject = videoStream
+      // 確保影片自動播放，即使元數據已經載入
+      const playPromise = video.play();
+      if (playPromise !== undefined) {
+        playPromise.then(() => {
+          setCameraStreamActive(true); // 播放成功，更新 Context 狀態
+        }).catch(e => {
+          console.error("Error playing video stream:", e);
+          setCameraStreamActive(false); // 播放失敗，更新 Context 狀態
+        });
+      }
+    }
+    // 清理函數：當 videoStream 改變或組件卸載時，將相機串流狀態設為非活動
+    return () => setCameraStreamActive(false);
+  }, [videoStream, setCameraStreamActive]) // 依賴於 Context 中的 videoStream 和 setCameraStreamActive
 
   const handleReset = async () => {
     const ok = await confirm('Emergency reset? All current shots will be lost.')
@@ -68,7 +63,7 @@ export default function BoothPage() {
     const interval = setInterval(() => {
       setRecordingTimeLeft(prev => (prev !== null && prev > 1 ? prev - 1 : null))
     }, 1000)
-    return () => clearInterval(interval)
+    return () => clearInterval(interval) // 清理計時器
   }, [boothState, kept])
 
   const nextSlotLabel = () => {
@@ -78,10 +73,10 @@ export default function BoothPage() {
     return 'START RECORDING'
   }
 
-  const canTake = isCameraReady && boothState === 2
+  const canTake = isCameraStreamActive && boothState === 2
 
   const takeButtonLabel = () => {
-    if (!isCameraReady) return 'INITIALIZING...'
+    if (!isCameraStreamActive) return 'INITIALIZING...'
     if (boothState === 3) return '...'
     if (boothState === 0) return 'RECORDING...'
     if (boothState === 1) return 'PROCESSING...'
@@ -117,7 +112,7 @@ export default function BoothPage() {
         )}
 
         {/* Camera loading overlay */}
-        {!isCameraReady && !cameraError && (
+        {!isCameraStreamActive && !cameraError && (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-900 z-10">
             <div className="loader mb-4" />
             <p className="text-xs text-pink-500 uppercase tracking-widest">Initializing Stream</p>
