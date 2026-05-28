@@ -42,17 +42,30 @@ export default function ResultPage() {
   const imageSrc = finalResult.localPath.startsWith('http') 
     ? finalResult.localPath 
     : `${API_BASE_URL}${finalResult.localPath}`
+  const isVideo = finalResult.localPath.toLowerCase().endsWith('.mp4')
+  const finalSrc = `${imageSrc}${imageSrc.includes('?') ? '&' : '?'}t=${Date.now()}`
 
   return (
     <div className="bg-slate-950 min-h-screen flex flex-col items-center justify-center text-white font-mono p-8">
       <div className="flex flex-col md:flex-row gap-12 w-full max-w-5xl items-center">
         {/* Collage image */}
         <div className="flex-1 rounded-xl overflow-hidden border border-pink-500/50 shadow-2xl shadow-pink-500/10 aspect-video">
-          <img
-            src={`${imageSrc}${imageSrc.includes('?') ? '&' : '?'}t=${Date.now()}`}
-            className="w-full h-full object-contain bg-black"
-            alt="Final Collage"
-          />
+          {isVideo ? (
+            <video
+              src={finalSrc}
+              className="w-full h-full object-contain bg-black"
+              autoPlay
+              loop
+              muted
+              playsInline
+            />
+          ) : (
+            <img
+              src={finalSrc}
+              className="w-full h-full object-contain bg-black"
+              alt="Final Collage"
+            />
+          )}
         </div>
 
         {/* QR + actions panel */}
