@@ -176,7 +176,7 @@ async function runCountdown() {
     }
 }
 
-async function systemFullReset() {
+async function systemFullReset() { // 不再接收 moduleNameForTD 參數
     console.log("--- 完全重置 ---");
     cancelTimedStop();
     selectedPhotos = [];
@@ -185,7 +185,8 @@ async function systemFullReset() {
     currentSessionID = `ssn_${Date.now()}_${randomStr}`;
 
     try {
-        await axios.post(`${TD_URL}/reset`, { sessionID: currentSessionID, module: activeModuleName }, { timeout: 3000 });
+        // 不再傳遞 'module' 參數給 TD 的 /reset 端點
+        await axios.post(`${TD_URL}/reset`, { sessionID: currentSessionID }, { timeout: 3000 });
         console.log("TD Reset Success");
     } catch (e) {
         console.error("TD Reset Failed (Is TD running?)");
@@ -208,37 +209,55 @@ io.on('connection', (socket) => {
     console.log('Client connected:', socket.id);
 
     const activeCaps = availableModules.find(m => m.id === activeModuleName)?.capabilities;
+    const currentModuleCaps = availableModules.find(m => m.id === activeModuleName)?.capabilities;
 
     socket.emit('status_update', {
         message: selectedPhotos.length > 0 ? 'Connected - Resuming' : 'Ready',
         state: currentSystemState,
-        kept: selectedPhotos.length,
-        captureMode,
-        timedDuration,
-        capabilities: activeCaps,
+        // 確保在連接時發送正確的 capabilities
+        capabilities: currentModuleCaps,
         modules: availableModules,
         currentModule: activeModuleName,
         currentLayoutId: activeLayout?.id ?? '',
-        slots: clientSlots(),
-        result: currentResult,
+        slots: clientSlots()
     });
 
     socket.on('user_clicked_start', async (data) => {
-        if (data?.moduleId && data.moduleId !== activeModuleName) {
-            activeModuleName = data.moduleId;
-        }
-        if (data?.layoutId) {
+        const newModuleId = data?.moduleId;
+        const newLayoutId = data?.layoutId;
+        const moduleChanged = newModuleId && newModuleId !== activeModuleName;
+        const layoutChanged = newLayoutId && newLayoutId !== activeLayout?.id;
+
+        // 如果模組有變更，先顯式通知 TD 切換模組
+        if (moduleChanged) {
             try {
-                const { layout, slots } = loadModuleManifest(activeModuleName, data.layoutId);
+                // 這裡重複了 set_module 的邏輯，可以考慮提取成一個 helper 函數
+                await axios.post(`${TD_URL}/set_module`, { module: newModuleId }, { timeout: 5000 });
+                await sleep(500); // 給 TD 一些時間重新初始化
+                activeModuleName = newModuleId; // TD 確認切換後，更新 Node.js 的狀態
+                console.log(`[Modules] Explicitly switched to: ${activeModuleName} during start session`);
+            } catch (e) {
+                console.error('Explicit module switch failed during start session:', e.message);
+                // 這裡可以選擇如何處理錯誤：是中止會話，還是繼續使用舊模組並發出警告
+                // 目前選擇記錄錯誤並繼續，TD 可能會保持在舊模組
+            }
+        }
+
+        // 處理佈局變更 (這不涉及 TD 的 /set_module，只涉及 manifest 重新載入)
+        if (layoutChanged) {
+            try {
+                const { layout, slots } = loadModuleManifest(activeModuleName, newLayoutId);
                 activeLayout = layout;
                 activeSlots = slots;
             } catch (e) {
-                console.error('Layout not found:', data.layoutId);
+                console.error('Layout not found:', newLayoutId);
             }
         }
+
         if (data?.captureMode) captureMode = data.captureMode;
         if (data?.timedDuration != null) timedDuration = data.timedDuration;
 
+        // 現在執行純粹的會話重置，不再傳遞模組資訊給 TD 的 /reset
         await systemFullReset();
         const caps = availableModules.find(m => m.id === activeModuleName)?.capabilities;
         broadcastStatusUpdate({
@@ -286,7 +305,7 @@ io.on('connection', (socket) => {
     });
 
     socket.on('set_module', async (data) => {
-        if (!data.moduleId || currentSystemState !== 2) return;
+        if (!data.moduleId || currentSystemState !== 2) return; // 僅在 IDLE 狀態下允許模組切換
         try {
             await axios.post(`${TD_URL}/set_module`, { module: data.moduleId }, { timeout: 5000 });
             await sleep(500);
