@@ -133,8 +133,8 @@ export default function BoothPage() {
         {boothState === 3 && countdown !== null && (
           <div className="absolute inset-0 flex items-center justify-center z-30 pointer-events-none">
             <span
-              className="font-black text-white select-none leading-none"
-              style={{ fontSize: '30vw', textShadow: '0 0 80px rgba(236,72,153,0.9), 0 0 20px rgba(236,72,153,0.6)' }}
+              className="font-black text-white/80 select-none leading-none"
+              style={{ fontSize: '25vw', textShadow: '0 0 80px rgba(236,72,153,0.9), 0 0 20px rgba(236,72,153,0.6)' }}
             >
               {countdown}
             </span>
