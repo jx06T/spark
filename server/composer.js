@@ -7,7 +7,7 @@ const { execFile } = require('child_process');
 const { uploadImage, uploadThumbnail } = require('./uploader');
 
 const ROOT = path.join(__dirname, '..');
-const OFFICIAL_URL = "https://club.cksc.tw/";
+const OFFICIAL_URL = "https://exhibit.ckefgisc.org/";
 
 async function generateFinalCollage(sessionID, photoFilenames, layout, slots) {
     const hasVideo = Array.isArray(slots) && slots.some(s => s.effectiveType === 'video');
@@ -85,11 +85,13 @@ async function generateImageCollage(sessionID, photoFilenames, layout) {
     }).composite(layers).jpeg({ quality: 95 }).toBuffer();
 
     await fs.promises.writeFile(finalLocalPath, finalBuffer);
-    console.log(`[Composer] Saved: ${finalLocalPath}`);
+    console.log(`[Composer] Image saved: ${finalLocalPath} (${finalBuffer.length} bytes)`);
 
     let publicUrl = null;
     try {
+        console.log(`[Composer] Uploading image collage for session: ${sessionID}`);
         publicUrl = await uploadImage(sessionID, finalBuffer, 'jpg');
+        console.log(`[Composer] Image upload complete, publicUrl: ${publicUrl}`);
     } catch (e) {
         console.error('[Composer] Upload failed:', e.message);
     }
@@ -178,6 +180,20 @@ function runFfmpeg(args, timeoutMs = 120000) {
     });
 }
 
+async function extractVideoThumbnail(videoPath, outputPath) {
+    // thumbnail=n=50 analyzes first 50 frames and picks the most visually representative one
+    // avoids leading black frames far more reliably than a fixed timestamp seek
+    console.log(`[Composer] Extracting thumbnail from: ${path.basename(videoPath)}`);
+    await runFfmpeg([
+        '-i', videoPath,
+        '-vf', 'thumbnail=n=50',
+        '-frames:v', '1',
+        '-y',
+        outputPath,
+    ], 30000);
+    console.log(`[Composer] Thumbnail extracted: ${path.basename(outputPath)}`);
+}
+
 async function generateVideoCollage(sessionID, photoFilenames, layout, slots) {
     const sessionDir = path.join(ROOT, 'sessions', sessionID);
     const finalLocalPath = path.join(sessionDir, 'collage.mp4');
@@ -194,12 +210,6 @@ async function generateVideoCollage(sessionID, photoFilenames, layout, slots) {
         fs.promises.writeFile(baseFramePath, baseBuffer),
         fs.promises.writeFile(topLayerPath, topBuffer),
     ]);
-
-    // Generate thumbnail (base + overlay composited) for OG image
-    const thumbBuffer = await sharp(baseBuffer)
-        .composite([{ input: topBuffer, top: 0, left: 0 }])
-        .jpeg({ quality: 85 })
-        .toBuffer();
 
     const videoEntries = slots
         .map((slot, i) => ({ slot, filepath: path.join(sessionDir, photoFilenames[i]) }))
@@ -237,16 +247,28 @@ async function generateVideoCollage(sessionID, photoFilenames, layout, slots) {
     args.push('-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '28', '-pix_fmt', 'yuv420p', '-movflags', '+faststart');
     args.push(finalLocalPath);
 
-    console.log('[Composer] Running ffmpeg...');
+    console.log('[Composer] Running ffmpeg for video collage...');
     await runFfmpeg(args);
-    console.log(`[Composer] Saved: ${finalLocalPath}`);
+    console.log(`[Composer] Video saved: ${finalLocalPath}`);
+
+    // Extract thumbnail from the final composited mp4 (non-black representative frame)
+    const thumbLocalPath = path.join(sessionDir, '_thumb.jpg');
+    try {
+        await extractVideoThumbnail(finalLocalPath, thumbLocalPath);
+    } catch (e) {
+        console.error('[Composer] Thumbnail extraction failed:', e.message);
+    }
 
     const finalBuffer = await fs.promises.readFile(finalLocalPath);
     let publicUrl = null;
     try {
+        const thumbBuffer = fs.existsSync(thumbLocalPath)
+            ? await fs.promises.readFile(thumbLocalPath)
+            : null;
+        console.log(`[Composer] Uploading mp4 (${finalBuffer.length} bytes) + thumbnail (${thumbBuffer?.length ?? 0} bytes)`);
         [publicUrl] = await Promise.all([
             uploadImage(sessionID, finalBuffer, 'mp4'),
-            uploadThumbnail(sessionID, thumbBuffer),
+            thumbBuffer ? uploadThumbnail(sessionID, thumbBuffer) : Promise.resolve(),
         ]);
     } catch (e) {
         console.error('[Composer] Upload failed:', e.message);
@@ -255,6 +277,7 @@ async function generateVideoCollage(sessionID, photoFilenames, layout, slots) {
     await Promise.all([
         fs.promises.unlink(baseFramePath).catch(() => {}),
         fs.promises.unlink(topLayerPath).catch(() => {}),
+        fs.promises.unlink(thumbLocalPath).catch(() => {}),
     ]);
 
     return { publicUrl, localPath: `sessions/${sessionID}/collage.mp4` };
