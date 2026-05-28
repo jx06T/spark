@@ -1,11 +1,7 @@
 import json
 import os
 
-# Module-level session state (lives as long as the .toe is open)
-current_session_path = ""
-attempt_count = 0
-active_module = ""
-
+print("no no no no")
 
 # ── Path helpers ───────────────────────────────────────────────────────────────
 # This script lives inside comm_server Base COMP.
@@ -26,6 +22,44 @@ def _get_photo_index():
 
 def _set_photo_index(val):
     _chop().par.value2 = val  # value0=state, value1=session_id, value2=photo_index
+
+# New persistence helpers for current_session_path, attempt_count, active_module
+def _get_session_path():
+    """Retrieves the current session path from the CHOP parameter."""
+    # Now reads from the 'session_path' Text DAT
+    session_path_dat = _root().op('state_holder/session_path')
+    print(session_path_dat)
+    if session_path_dat:
+        return session_path_dat.text.strip()
+    else:
+        print(f"[comm_server] Error: 'state_holder/session_path' Text DAT not found. Returning empty path.")
+        return "" # Return empty string as a safe fallback
+
+def _set_session_path(path):
+    """Stores the current session path into the CHOP parameter."""
+    # Now writes to the 'session_path' Text DAT
+    print("!",path)
+    session_path_dat = _root().op('state_holder/session_path')
+    if session_path_dat:
+        session_path_dat.text = path
+
+def _get_attempt_count():
+    """Retrieves the current attempt count from the CHOP parameter, ensuring it's an integer."""
+    try:
+        # CHOP parameters store values as strings; convert to float first for robustness
+        return int(_chop()['attempt_count'].eval())
+    except ValueError:
+        return 0
+
+def _set_attempt_count(count):
+    """Stores the current attempt count into the CHOP parameter."""
+    _chop().par.value4 = count
+
+def _get_active_module():
+    return _chop()['active_module'].eval()
+
+def _set_active_module(module_name):
+    _chop().par.value5 = module_name
 
 def _processing_module():
     return _root().op('video_pipeline/processing_module')
@@ -62,7 +96,7 @@ def onHTTPRequest(webServerDAT, request, response):
             'state':       int(_chop()['state'].eval()),
             'photo_index': _get_photo_index(),
             'fps':         round(project.cookRate, 2),
-            'module':      active_module,
+            'module':      _get_active_module(),
         })
         return response
 
@@ -109,28 +143,30 @@ def _handle_stop_and_save(body):
     _schedule_save()
 
 def _handle_start_video_record(body):
-    global attempt_count
-    attempt_count += 1
-    filename = f'raw_{attempt_count}.mov'
-    filepath = os.path.join(current_session_path, filename)
+    current_count = _get_attempt_count()
+    new_count = current_count + 1
+    _set_attempt_count(new_count)
+    filename = f'raw_{new_count}.mov'
+    filepath = os.path.join(_get_session_path(), filename)
 
-    mo = _movie_out()
+    mo = _movie_out() # Using _movie_out() directly is fine
     mo.par.record = 0 # 【新增】安全機制：確保先關閉舊的
     
     mo.par.file = filepath.replace('\\', '/') 
     
     mo.par.record = 1
-    _set_photo_index(attempt_count)
+    _set_photo_index(new_count) # 修正：應使用 new_count
     _set_state(0)  # RECORDING
-    print(f'[comm_server] video record started => {filename}')
+    print(f'[comm_server] video record started => {filepath}')
 
 def _handle_stop_video_record(body):
     _movie_out().par.record = 0
     _set_state(1)  # PROCESSING
 
-    filename = f'raw_{attempt_count}.mov'
+    current_count = _get_attempt_count()
+    filename = f'raw_{current_count}.mov'
     run("me.module.notify_node(args[0], args[1])",
-        attempt_count, filename,
+        current_count, filename,
         delayFrames=30)
     print(f'[comm_server] video record stopped => {filename}')
 
@@ -138,24 +174,23 @@ def _handle_ready_for_next_attempt(body):
     _set_state(2)   # IDLE
 
 def _handle_reset(body):
-    global current_session_path, attempt_count
     module_name = body.get('module', '')
-    if module_name and module_name != active_module:
+    if module_name and module_name != _get_active_module():
         try:
             _handle_set_module({'module': module_name})
         except Exception as e:
             print(f'[comm_server] module switch failed during reset, continuing: {e}')
     session_id = body.get('sessionID', 'default')
-    current_session_path = os.path.join(_sessions_root(), session_id)
-    os.makedirs(current_session_path, exist_ok=True)
-    attempt_count = 0
+    new_session_path = os.path.join(_sessions_root(), session_id)
+    os.makedirs(new_session_path, exist_ok=True)
+    _set_session_path(new_session_path)
+    _set_attempt_count(0)
     _chop().par.value1 = 0   # session_id channel 重置為 0（字串路徑由模組變數管理）
     _set_photo_index(0)
     _set_state(2)   # IDLE
     print(f'[comm_server] reset => session: {session_id}')
 
 def _handle_set_module(body):
-    global active_module
     module_name = body.get('module', '')
     if not module_name:
         raise ValueError('missing module name')
@@ -176,25 +211,26 @@ def _handle_set_module(body):
 
     proc.par.externaltox = tox_path
     proc.par.reinitnet.pulse()
-    active_module = module_name
+    _set_active_module(module_name)
     print(f'[comm_server] module switched => {module_name}')
 
 
 # ── Save scheduling ────────────────────────────────────────────────────────────
 
 def _schedule_save():
-    global attempt_count
-    attempt_count += 1
-    photo_index = attempt_count
+    current_count = _get_attempt_count()
+    new_count = current_count + 1
+    _set_attempt_count(new_count)
+    photo_index = new_count
     filename    = f'raw_{photo_index}.png'
-    filepath    = os.path.join(current_session_path, filename)
+    filepath    = os.path.join(_get_session_path(), filename) # 修正：補齊 filepath 賦值
     _set_photo_index(photo_index)
 
     # 延遲 2 幀：確保 processing_module 最後一幀已 cook 完畢
     run("me.module.do_delayed_save(args[0], args[1], args[2])",
         filepath, filename, photo_index,
         delayFrames=2)
-    print(f'[comm_server] save scheduled => {filename}')
+    print(f'[comm_server] save scheduled => {filepath}')
 
 
 def do_delayed_save(filepath, filename, photo_index):
