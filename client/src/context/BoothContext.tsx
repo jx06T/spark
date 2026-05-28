@@ -112,10 +112,14 @@ export function BoothProvider({ children }: { children: ReactNode }) {
     setModule: (moduleId) => socket.emit('set_module', { moduleId }),
     reset: () => socket.emit('user_clicked_reset'),
     startSession: (data) => {
+      // 如果沒傳入新資料，預設使用當前已選擇的模組與佈局
+      const moduleId = data?.moduleId || currentModule
+      const layoutId = data?.layoutId || currentLayoutId
+
       setBoothState(2)
       setResult(null)
       setKept(0)
-      socket.emit('user_clicked_start', { moduleId: data?.moduleId, layoutId: data?.layoutId })
+      socket.emit('user_clicked_start', { moduleId, layoutId })
     },
   }
 

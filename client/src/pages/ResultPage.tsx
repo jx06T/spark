@@ -23,7 +23,8 @@ export default function ResultPage() {
   }, [result])
 
   const handleStartNew = () => {
-    localStorage.removeItem('last_booth_result') // 清除舊結果
+    // 不要在此處立即 removeItem，避免觸發 useEffect 的退回首頁邏輯
+    // startSession 現在會正確保留當前模組資訊並重置拍攝進度
     startSession()
     navigate('/booth')
   }
