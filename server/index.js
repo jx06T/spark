@@ -18,6 +18,7 @@ const ROOT = path.join(__dirname, '..');
 let selectedPhotos = [];
 let currentSessionID = "";
 let currentSystemState = 2;
+let currentResult = null; // 紀錄最後一次合成結果
 let captureMode = 'instant'; // 'instant' | 'timed' | 'manual'
 let timedDuration = null;    // number | null (seconds)
 let timedStopTimer = null;   // NodeJS.Timeout for auto-stop
@@ -179,6 +180,7 @@ async function systemFullReset() {
     console.log("--- 完全重置 ---");
     cancelTimedStop();
     selectedPhotos = [];
+    currentResult = null;
     const randomStr = Math.random().toString(36).substring(2, 10);
     currentSessionID = `ssn_${Date.now()}_${randomStr}`;
 
@@ -218,6 +220,7 @@ io.on('connection', (socket) => {
         currentModule: activeModuleName,
         currentLayoutId: activeLayout?.id ?? '',
         slots: clientSlots(),
+        result: currentResult,
     });
 
     socket.on('user_clicked_start', async (data) => {
@@ -332,7 +335,8 @@ io.on('connection', (socket) => {
 
             try {
                 const result = await generateFinalCollage(currentSessionID, selectedPhotos, activeLayout, activeSlots);
-                if (!result.publicUrl) result.publicUrl = `sessions/${currentSessionID}/collage.jpg`;
+                if (!result.publicUrl) result.publicUrl = `/sessions/${currentSessionID}/collage.jpg`;
+                currentResult = result;
                 broadcastStatusUpdate({ message: 'Finished', state: 5, result });
             } catch (e) {
                 console.error('Collage generation failed:', e.message);
@@ -375,7 +379,8 @@ io.on('connection', (socket) => {
 
         try {
             const result = await generateFinalCollage(currentSessionID, selectedPhotos, activeLayout, activeSlots);
-            if (!result.publicUrl) result.publicUrl = `sessions/${currentSessionID}/collage.jpg`;
+            if (!result.publicUrl) result.publicUrl = `/sessions/${currentSessionID}/collage.jpg`;
+            currentResult = result;
             broadcastStatusUpdate({ message: 'Finished', state: 5, result });
         } catch (e) {
             console.error('Collage generation failed:', e.message);

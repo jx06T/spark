@@ -106,7 +106,6 @@ export default function BoothPage() {
               src={`${previewUrl}?t=${Date.now()}`}
               className="absolute inset-0 w-full h-full object-contain bg-black z-20"
               autoPlay loop muted playsInline
-              type="video/mp4"
             />
           ) : (
             <img

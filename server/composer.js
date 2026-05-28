@@ -96,7 +96,7 @@ async function generateImageCollage(sessionID, photoFilenames, layout) {
         console.error('[Composer] Upload failed:', e.message);
     }
 
-    return { publicUrl, localPath: `sessions/${sessionID}/collage.jpg` };
+    return { publicUrl, localPath: `/sessions/${sessionID}/collage.jpg` };
 }
 
 // ── Video path (ffmpeg) ─────────────────────────────────────────────────────
@@ -280,7 +280,7 @@ async function generateVideoCollage(sessionID, photoFilenames, layout, slots) {
         fs.promises.unlink(thumbLocalPath).catch(() => {}),
     ]);
 
-    return { publicUrl, localPath: `sessions/${sessionID}/collage.mp4` };
+    return { publicUrl, localPath: `/sessions/${sessionID}/collage.mp4` };
 }
 
 module.exports = { generateFinalCollage };
