@@ -149,6 +149,7 @@ sessions/*
 Backup
 
 v7.*.toe
+main.*.toe
 
 *.psd
 
