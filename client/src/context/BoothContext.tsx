@@ -90,7 +90,7 @@ export function BoothProvider({ children }: { children: ReactNode }) {
       if (data.currentLayoutId) setCurrentLayoutId(data.currentLayoutId)
       if (data.currentFile) setCurrentFile(data.currentFile)
       if (data.previewUrl) setPreviewUrl(data.previewUrl)
-      if (data.result) setResult(data.result)
+      if (data.result !== undefined) setResult(data.result)
       if (data.slots) setActiveSlots(data.slots)
     }
 

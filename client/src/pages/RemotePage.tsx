@@ -6,12 +6,13 @@ export default function RemotePage() {
   const {
     boothState, message, kept, countdown, captureMode, capabilities,
     modules, currentModule, currentModuleLayouts, currentLayoutId,
-    triggerShot, stopRecording, keepPhoto, retakePhoto, finishEarly,
+    triggerShot, stopRecording, keepPhoto, retakePhoto, finishEarly, startSession,
     setCaptureMode, setLayout, setModule, reset, activeSlots,
   } = useBoothContext()
   const { confirm, modal } = useConfirm()
   const [recordingTimeLeft, setRecordingTimeLeft] = useState<number | null>(null)
 
+  const totalSlots = activeSlots.length || 4
   const nextSlot = activeSlots[kept]
 
   // 處理定時錄影倒數邏輯
@@ -25,7 +26,7 @@ export default function RemotePage() {
       setRecordingTimeLeft(prev => (prev !== null && prev > 1 ? prev - 1 : null))
     }, 1000)
     return () => clearInterval(interval)
-  }, [boothState, kept, nextSlot])
+  }, [boothState, kept])
 
   const handleReset = async () => {
     const ok = await confirm('Reset session? All current shots will be lost.')
@@ -46,6 +47,13 @@ export default function RemotePage() {
     setModule(next.id)
   }
 
+  const nextSlotLabel = () => {
+    if (!nextSlot) return 'TAKE PHOTO'
+    if (nextSlot.capture === 'instant') return nextSlot.type === 'video' ? 'CAPTURE FRAME' : 'TAKE PHOTO'
+    if (nextSlot.capture === 'timed') return `RECORD ${nextSlot.timedDuration}s VIDEO`
+    return 'START RECORDING'
+  }
+
   const currentMod = modules.find(m => m.id === currentModule)
   const currentLayout = currentModuleLayouts.find(l => l.id === currentLayoutId)
 
@@ -57,15 +65,18 @@ export default function RemotePage() {
       {/* Status bar */}
       <div className="fixed top-0 left-0 w-full bg-pink-600 text-[10px] py-1 px-4 flex justify-between z-50">
         <span>{message}</span>
-        <span>SHOTS: {kept}/4</span>
+        <span>SHOTS: {kept}/{totalSlots}</span>
       </div>
 
       {/* Main action area — full screen button */}
       <div className="h-screen pt-6">
         {boothState === 0 ? (
           nextSlot?.capture === 'timed' ? (
-            <div className="w-full h-full flex items-center justify-center text-[30vw] font-black text-red-500 tabular-nums">
-              {recordingTimeLeft ?? nextSlot.timedDuration}
+            <div className="w-full h-full flex flex-col items-center justify-center">
+              <span className="text-[30vw] font-black text-red-500 tabular-nums leading-none">
+                {recordingTimeLeft ?? nextSlot.timedDuration}
+              </span>
+              <span className="text-2xl font-black text-red-600 animate-pulse tracking-widest">RECORDING</span>
             </div>
           ) : (
             <button
@@ -94,10 +105,19 @@ export default function RemotePage() {
           <div className="w-full h-full flex items-center justify-center text-[20vw] font-black">
             {countdown ?? ''}
           </div>
-        ) : boothState === 1 || boothState === 5 ? (
+        ) : boothState === 1 ? (
           <div className="w-full h-full flex flex-col items-center justify-center gap-6 text-pink-500">
             <span className="text-[15vw] animate-spin leading-none">◌</span>
-            <span className="text-2xl">{boothState === 5 ? 'DONE! (Check Screen)' : 'PROCESSING...'}</span>
+            <span className="text-2xl font-bold">
+              {kept >= totalSlots - 1 ? 'GENERATING COLLAGE...' : 'PROCESSING...'}
+            </span>
+          </div>
+        ) : boothState === 5 ? ( // DONE state
+          <div className="w-full h-full flex flex-col items-center justify-center gap-4 text-pink-500 px-6">
+            <div className="text-center">
+              <h2 className="text-6xl font-black mb-2 leading-none">DONE!</h2>
+              <p className="text-gray-400 uppercase tracking-widest">(Check the main screen)</p>
+            </div>
           </div>
         ) : (
           // state 2: IDLE
@@ -105,7 +125,7 @@ export default function RemotePage() {
             onClick={triggerShot}
             className="w-full h-full bg-pink-600 active:bg-pink-700 active:scale-[0.98] flex items-center justify-center text-5xl font-black transition-transform"
           >
-            TAKE PHOTO
+            {nextSlotLabel()}
           </button>
         )}
       </div>
@@ -140,6 +160,18 @@ export default function RemotePage() {
               {currentMod?.name.toUpperCase() ?? 'MODULE'}
             </button>
           )}
+        </div>
+      )}
+
+      {/* Bottom right: Start New (only when Done) */}
+      {boothState === 5 && (
+        <div className="fixed bottom-4 right-4 z-50">
+          <button 
+            onClick={() => startSession()} 
+            className="bg-pink-600 px-6 py-3 rounded-full text-sm font-black text-white active:scale-95 transition-transform shadow-lg shadow-pink-600/40 uppercase tracking-widest"
+          >
+            Start New
+          </button>
         </div>
       )}
 

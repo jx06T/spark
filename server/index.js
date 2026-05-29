@@ -117,11 +117,12 @@ function broadcastStatusUpdate(payload) {
         currentSystemState = payload.state;
     }
     io.emit('status_update', {
-        ...payload,
+        result: currentResult,
         captureMode,
         timedDuration,
         currentLayoutId: activeLayout?.id ?? '',
         slots: clientSlots(),
+        ...payload,
     });
 }
 

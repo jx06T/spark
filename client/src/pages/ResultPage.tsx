@@ -30,9 +30,11 @@ export default function ResultPage() {
   }
 
   useEffect(() => {
-    // 如果 Context 顯示不是結果狀態，且本地也沒有緩存，才跳轉
-    // 增加一個延遲或檢查機制，確保 Socket 連線恢復中不會誤判
-    if (boothState !== 5 && !localStorage.getItem('last_booth_result')) {
+    // 如果系統狀態變回 IDLE (2)，說明有人從遠端重置或開始新會話，主螢幕必須同步切換
+    if (boothState === 2) {
+      navigate('/booth', { replace: true })
+    } else if (boothState !== 5 && !localStorage.getItem('last_booth_result')) {
+      // 如果不是結果狀態且無快取，強制回到初始頁面
       navigate('/', { replace: true })
     }
   }, [boothState, navigate])
@@ -48,7 +50,7 @@ export default function ResultPage() {
 
   return (
     <div className="bg-slate-950 min-h-screen flex flex-col items-center justify-center text-white font-mono p-8">
-      <div className="flex flex-col md:flex-row gap-12 w-full max-w-5xl items-center">
+      <div className="flex flex-col md:flex-row gap-12 w-full max-w-5xl 2xl:max-w-7xl items-center">
         {/* Collage image */}
         <div className="flex-1 rounded-xl overflow-hidden border border-pink-500/50 shadow-2xl shadow-pink-500/10 aspect-video">
           {isVideo ? (
