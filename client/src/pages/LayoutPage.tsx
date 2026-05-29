@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { useBoothContext } from '../context/BoothContext'
 
 export default function LayoutPage() {
-  const { modules, currentModule, currentLayoutId, startSession } = useBoothContext()
+  const { modules, currentModule, currentLayoutId, startSession, setModule } = useBoothContext()
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -15,6 +15,13 @@ export default function LayoutPage() {
     const validId = layouts.find(l => l.id === currentLayoutId)?.id
     return validId || layouts[0]?.id || ''
   })
+
+  // 當進入頁面或 moduleId 改變時，主動通知後端切換 TD 模組
+  useEffect(() => {
+    if (moduleId && moduleId !== currentModule) {
+      setModule(moduleId)
+    }
+  }, [moduleId, currentModule, setModule])
 
   // Sync layout default once module data loads or when module changes
   useEffect(() => {

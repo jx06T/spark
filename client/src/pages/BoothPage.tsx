@@ -52,7 +52,7 @@ export default function BoothPage() {
   const totalSlots = activeSlots.length || 4
   const nextSlot = activeSlots[kept]
   const currentSlot = activeSlots[Math.max(0, kept - 1)]
-
+  
   // Timed recording countdown
   useEffect(() => {
     if (boothState !== 0 || nextSlot?.capture !== 'timed' || !nextSlot.timedDuration) {

@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { useBoothContext } from '../context/BoothContext'
 import { useConfirm } from '../hooks/useConfirm'
 
@@ -6,9 +7,25 @@ export default function RemotePage() {
     boothState, message, kept, countdown, captureMode, capabilities,
     modules, currentModule, currentModuleLayouts, currentLayoutId,
     triggerShot, stopRecording, keepPhoto, retakePhoto, finishEarly,
-    setCaptureMode, setLayout, setModule, reset,
+    setCaptureMode, setLayout, setModule, reset, activeSlots,
   } = useBoothContext()
   const { confirm, modal } = useConfirm()
+  const [recordingTimeLeft, setRecordingTimeLeft] = useState<number | null>(null)
+
+  const nextSlot = activeSlots[kept]
+
+  // 處理定時錄影倒數邏輯
+  useEffect(() => {
+    if (boothState !== 0 || nextSlot?.capture !== 'timed' || !nextSlot.timedDuration) {
+      setRecordingTimeLeft(null)
+      return
+    }
+    setRecordingTimeLeft(nextSlot.timedDuration)
+    const interval = setInterval(() => {
+      setRecordingTimeLeft(prev => (prev !== null && prev > 1 ? prev - 1 : null))
+    }, 1000)
+    return () => clearInterval(interval)
+  }, [boothState, kept, nextSlot])
 
   const handleReset = async () => {
     const ok = await confirm('Reset session? All current shots will be lost.')
@@ -46,12 +63,18 @@ export default function RemotePage() {
       {/* Main action area — full screen button */}
       <div className="h-screen pt-6">
         {boothState === 0 ? (
-          <button
-            onClick={stopRecording}
-            className="w-full h-full bg-red-600 active:bg-red-700 active:scale-[0.98] flex items-center justify-center text-5xl font-black animate-pulse transition-transform"
-          >
-            STOP & SAVE
-          </button>
+          nextSlot?.capture === 'timed' ? (
+            <div className="w-full h-full flex items-center justify-center text-[30vw] font-black text-red-500 tabular-nums">
+              {recordingTimeLeft ?? nextSlot.timedDuration}
+            </div>
+          ) : (
+            <button
+              onClick={stopRecording}
+              className="w-full h-full bg-red-600 active:bg-red-700 active:scale-[0.98] flex items-center justify-center text-5xl font-black animate-pulse transition-transform"
+            >
+              STOP & SAVE
+            </button>
+          )
         ) : boothState === 4 ? (
           <div className="flex w-full h-full">
             <button

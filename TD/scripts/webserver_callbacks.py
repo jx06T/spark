@@ -174,12 +174,6 @@ def _handle_ready_for_next_attempt(body):
     _set_state(2)   # IDLE
 
 def _handle_reset(body):
-    module_name = body.get('module', '')
-    if module_name and module_name != _get_active_module():
-        try:
-            _handle_set_module({'module': module_name})
-        except Exception as e:
-            print(f'[comm_server] module switch failed during reset, continuing: {e}')
     session_id = body.get('sessionID', 'default')
     new_session_path = os.path.join(_sessions_root(), session_id)
     os.makedirs(new_session_path, exist_ok=True)
@@ -202,7 +196,12 @@ def _handle_set_module(body):
         raise FileNotFoundError(f'effect.tox not found for module: {module_name}')
 
     proc = _processing_module()
+    # 如果當前模組已經是目標模組，則不執行任何操作，避免不必要的重新載入
+    if os.path.normpath(proc.par.externaltox.val) == tox_path:
+        print(f'[comm_server] module already active: {module_name}, skipping reload.')
+        return
 
+    proc = _processing_module()
     # Save current tox before switching (protects in-progress edits in dev)
     current_tox = proc.par.externaltox.val
     if current_tox and os.path.exists(current_tox):

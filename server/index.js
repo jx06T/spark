@@ -223,26 +223,8 @@ io.on('connection', (socket) => {
     });
 
     socket.on('user_clicked_start', async (data) => {
-        const newModuleId = data?.moduleId;
         const newLayoutId = data?.layoutId;
-        const moduleChanged = newModuleId && newModuleId !== activeModuleName;
         const layoutChanged = newLayoutId && newLayoutId !== activeLayout?.id;
-
-        // 如果模組有變更，先顯式通知 TD 切換模組
-        if (moduleChanged) {
-            try {
-                // 這裡重複了 set_module 的邏輯，可以考慮提取成一個 helper 函數
-                await axios.post(`${TD_URL}/set_module`, { module: newModuleId }, { timeout: 5000 });
-                await sleep(500); // 給 TD 一些時間重新初始化
-                activeModuleName = newModuleId; // TD 確認切換後，更新 Node.js 的狀態
-                console.log(`[Modules] Explicitly switched to: ${activeModuleName} during start session`);
-            } catch (e) {
-                console.error('Explicit module switch failed during start session:', e.message);
-                // 這裡可以選擇如何處理錯誤：是中止會話，還是繼續使用舊模組並發出警告
-                // 目前選擇記錄錯誤並繼續，TD 可能會保持在舊模組
-            }
-        }
-
         // 處理佈局變更 (這不涉及 TD 的 /set_module，只涉及 manifest 重新載入)
         if (layoutChanged) {
             try {
