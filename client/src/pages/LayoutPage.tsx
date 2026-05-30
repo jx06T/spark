@@ -18,11 +18,10 @@ export default function LayoutPage() {
 
   // 當進入頁面或 moduleId 改變時，主動通知後端切換 TD 模組
   useEffect(() => {
-    console.log(currentModule,moduleId)
-    if (moduleId && moduleId !== currentModule) {
+    if (moduleId) {
       setModule(moduleId)
     }
-  }, [moduleId, currentModule, setModule])
+  }, [moduleId, setModule])
 
   // Sync layout default once module data loads or when module changes
   useEffect(() => {
