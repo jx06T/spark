@@ -187,15 +187,29 @@ async function systemFullReset() { // 不再接收 moduleNameForTD 參數
     currentSessionID = `ssn_${Date.now()}_${randomStr}`;
 
     try {
-        // 不再傳遞 'module' 參數給 TD 的 /reset 端點
-        await axios.post(`${TD_URL}/reset`, { sessionID: currentSessionID }, { timeout: 3000 });
-        console.log("TD Reset Success");
+        const resp = await axios.post(`${TD_URL}/reset`, { sessionID: currentSessionID }, { timeout: 3000 });
+        
+        // 強制對齊 TD 與 Node 的模組資訊
+        if (resp.data && resp.data.module) {
+            if (activeModuleName !== resp.data.module) {
+                console.warn(`[Sync] TD module (${resp.data.module}) differs from Node (${activeModuleName}). Correcting...`);
+                activeModuleName = resp.data.module;
+            }
+        }
+        console.log(`TD Reset Success. Current Module: ${activeModuleName}`);
     } catch (e) {
         console.error("TD Reset Failed (Is TD running?)");
     }
 
     try {
-        const { capabilities: caps, layout, slots } = loadModuleManifest(activeModuleName, activeLayout?.id);
+        // 嘗試加載原本要求的佈局，若模組已在上面對齊中更換，loadModuleManifest 會因找不到 Layout 而拋錯，這時我們抓取 catch 走預設
+        let caps, layout, slots;
+        try {
+            ({ capabilities: caps, layout, slots } = loadModuleManifest(activeModuleName, activeLayout?.id));
+        } catch (err) {
+            ({ capabilities: caps, layout, slots } = loadModuleManifest(activeModuleName));
+        }
+
         activeLayout = layout;
         activeSlots = slots;
         if (!caps.capture.modes.includes(captureMode)) {

@@ -132,9 +132,12 @@ def onHTTPRequest(webServerDAT, request, response):
     handler = routes.get(uri) if method == 'POST' else None
     if handler:
         try:
-            handler(body)
+            result = handler(body)
             response['statusCode'] = 200
-            response['data'] = json.dumps({'status': 'ok'})
+            res_json = {'status': 'ok'}
+            if isinstance(result, dict):
+                res_json.update(result)
+            response['data'] = json.dumps(res_json)
         except Exception as e:
             response['statusCode'] = 500
             response['data'] = json.dumps({'error': str(e)})
@@ -201,6 +204,7 @@ def _handle_reset(body):
     _set_photo_index(0)
     _set_state(2)   # IDLE
     print(f'[comm_server] reset => session: {session_id}')
+    return {'module': _get_active_module()}
 
 def _handle_set_module(body):
     module_name = body.get('module', '')
@@ -231,6 +235,7 @@ def _handle_set_module(body):
     
     _set_active_module(module_name)
     print(f'[comm_server] module switched => {module_name}')
+    return {'module': module_name}
 
 
 # ── Save scheduling ────────────────────────────────────────────────────────────
