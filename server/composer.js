@@ -55,7 +55,17 @@ async function generateImageCollage(sessionID, photoFilenames, layout) {
     );
 
     const layers = photoLayers.filter(Boolean);
-    layers.push({ input: layout.overlay_path, top: 0, left: 0 });
+
+    const overlayBuffer = await sharp(layout.overlay_path)
+        .resize({
+            width: layout.canvas.w,
+            height: layout.canvas.h,
+            fit: 'cover',
+            position: 'center'
+        })
+        .toBuffer();
+
+    layers.push({ input: overlayBuffer, top: 0, left: 0 });
 
     for (const widget of layout.widgets) {
         if (widget.type === 'text') {
@@ -139,7 +149,11 @@ async function buildTopLayer(layout) {
         color: { dark: '#000000', light: '#FFFFFF' },
     });
 
-    const layers = [{ input: layout.overlay_path, top: 0, left: 0 }];
+    const overlayBuffer = await sharp(layout.overlay_path)
+        .resize(canvas.w, canvas.h, { fit: 'cover', position: 'center' })
+        .toBuffer();
+
+    const layers = [{ input: overlayBuffer, top: 0, left: 0 }];
 
     for (const widget of layout.widgets) {
         if (widget.type === 'text') {
@@ -228,13 +242,13 @@ async function generateVideoCollage(sessionID, photoFilenames, layout, slots) {
     // filter_complex: scale each video slot, then chain overlays
     const topIdx = videoEntries.length + 1;
     const scaleParts = videoEntries.map(({ slot }, i) =>
-        `[${i + 1}:v]fps=30,scale=${slot.w}:${slot.h}[sv${i}]`
+        `[${i + 1}:v]fps=30,scale=${Math.round(slot.w)}:${Math.round(slot.h)}[sv${i}]`
     );
     const overlayParts = [];
     let prev = '0:v';
     videoEntries.forEach(({ slot }, i) => {
         const out = `ov${i}`;
-        overlayParts.push(`[${prev}][sv${i}]overlay=${slot.x}:${slot.y}[${out}]`);
+        overlayParts.push(`[${prev}][sv${i}]overlay=${Math.round(slot.x)}:${Math.round(slot.y)}[${out}]`);
         prev = out;
     });
     overlayParts.push(`[${prev}][${topIdx}:v]overlay=0:0[final]`);
@@ -244,7 +258,8 @@ async function generateVideoCollage(sessionID, photoFilenames, layout, slots) {
     args.push('-filter_complex', [...scaleParts, ...overlayParts].join(';'));
     args.push('-map', '[final]');
     args.push('-t', String(maxDuration));
-    args.push('-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '28', '-pix_fmt', 'yuv420p', '-movflags', '+faststart');
+    // args.push('-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '28', '-pix_fmt', 'yuv420p', '-movflags', '+faststart');
+    args.push('-c:v', 'libx264', '-preset', 'veryfast', '-crf', '28', '-pix_fmt', 'yuv420p', '-movflags', '+faststart');
     args.push(finalLocalPath);
 
     console.log('[Composer] Running ffmpeg for video collage...');
@@ -275,9 +290,9 @@ async function generateVideoCollage(sessionID, photoFilenames, layout, slots) {
     }
 
     await Promise.all([
-        fs.promises.unlink(baseFramePath).catch(() => {}),
-        fs.promises.unlink(topLayerPath).catch(() => {}),
-        fs.promises.unlink(thumbLocalPath).catch(() => {}),
+        fs.promises.unlink(baseFramePath).catch(() => { }),
+        fs.promises.unlink(topLayerPath).catch(() => { }),
+        fs.promises.unlink(thumbLocalPath).catch(() => { }),
     ]);
 
     return { publicUrl, localPath: `/sessions/${sessionID}/collage.mp4` };

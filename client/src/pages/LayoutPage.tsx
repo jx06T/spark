@@ -59,16 +59,16 @@ export default function LayoutPage() {
         <p className="text-gray-500 text-xs mt-1 uppercase tracking-widest">Select a layout</p>
       </div>
 
-      <div className="flex-1 flex flex-col gap-10 max-w-3xl">
+      <div className="flex-1 flex flex-col gap-10 max-w-5xl 2xl:max-w-7xl ">
         {layouts.length >= 1 && (
           <div className="flex flex-col gap-3">
             <p className="text-gray-500 text-[10px] uppercase tracking-widest">Layout</p>
-            <div className="flex gap-4 flex-wrap">
+            <div className="flex gap-4 flex-wrap ">
               {layouts.map(l => (
                 <button
                   key={l.id}
                   onClick={() => setSelectedLayoutId(l.id)}
-                  className={`flex flex-col items-center gap-2 rounded-xl border-2 p-2 transition-all ${
+                  className={`w-60 flex flex-col items-center gap-2 rounded-xl border-2 p-2 transition-all ${
                     selectedLayoutId === l.id
                       ? 'border-pink-500 bg-pink-500/10'
                       : 'border-white/10 hover:border-white/30'
