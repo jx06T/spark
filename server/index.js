@@ -58,6 +58,7 @@ function clientSlots() {
 }
 
 function loadModuleManifest(moduleName, layoutId = null) {
+    console.log("[loadModuleManifest]",moduleName,layoutId)
     const moduleDir = path.join(ROOT, 'modules', moduleName);
     const manifest = JSON.parse(fs.readFileSync(path.join(moduleDir, 'manifest.json'), 'utf-8'));
     const target = layoutId
@@ -286,7 +287,7 @@ io.on('connection', (socket) => {
     socket.on('set_module', async (data) => {
         if (!data.moduleId || currentSystemState !== 2) return; // 僅在 IDLE 狀態下允許模組切換
         try {
-            await axios.post(`${TD_URL}/set_module`, { module: data.moduleId }, { timeout: 5000 });
+            await axios.post(`${TD_URL}/set_module`, { module: data.moduleId }, { timeout: 10000 });
             await sleep(500);
             activeModuleName = data.moduleId;
             const { capabilities: caps, layout, slots } = loadModuleManifest(activeModuleName);

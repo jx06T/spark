@@ -14,14 +14,30 @@ def _root():
 def _chop():
     return _root().op('state_holder/states')
 
+def _set_chan_val(name, val):
+    """根據通道名稱自動找到 Constant CHOP 的對應 valueN 參數並設定，實現具名存取"""
+    try:
+        chan = _chop()[name]
+        # 透過 chan.index 自動對應到 value0, value1... 等參數
+        _chop().par[f'value{chan.index}'] = val
+    except Exception:
+        print(f"[comm_server] Warning: channel '{name}' not found in states CHOP.")
+
 def _set_state(val):
-    _chop().par.value0 = val
+    _set_chan_val('state', val)
 
 def _get_photo_index():
-    return int(_chop()['photo_index'].eval())
+    try:
+        return int(_chop()['photo_index'].eval())
+    except Exception:
+        return 0
 
 def _set_photo_index(val):
-    _chop().par.value2 = val  # value0=state, value1=session_id, value2=photo_index
+    _set_chan_val('photo_index', val)
+
+def _set_session_id(val):
+    """設定 session_id 通道 (原本的 value1)"""
+    _set_chan_val('session_id', val)
 
 # New persistence helpers for current_session_path, attempt_count, active_module
 def _get_session_path():
@@ -44,22 +60,24 @@ def _set_session_path(path):
         session_path_dat.text = path
 
 def _get_attempt_count():
-    """Retrieves the current attempt count from the CHOP parameter, ensuring it's an integer."""
     try:
-        # CHOP parameters store values as strings; convert to float first for robustness
         return int(_chop()['attempt_count'].eval())
-    except ValueError:
+    except Exception:
         return 0
 
 def _set_attempt_count(count):
-    """Stores the current attempt count into the CHOP parameter."""
-    _chop().par.value4 = count
+    _set_chan_val('attempt_count', count)
 
 def _get_active_module():
-    return _chop()['active_module'].eval()
+    """從 Text DAT 讀取當前啟用的模組名稱 (比 CHOP 更適合存字串)"""
+    dat = _root().op('state_holder/active_module')
+    return dat.text.strip() if dat else ""
 
 def _set_active_module(module_name):
-    _chop().par.value5 = module_name
+    """將當前啟用的模組名稱存入 Text DAT"""
+    dat = _root().op('state_holder/active_module')
+    if dat:
+        dat.text = module_name
 
 def _processing_module():
     return _root().op('video_pipeline/processing_module')
@@ -179,7 +197,7 @@ def _handle_reset(body):
     os.makedirs(new_session_path, exist_ok=True)
     _set_session_path(new_session_path)
     _set_attempt_count(0)
-    _chop().par.value1 = 0   # session_id channel 重置為 0（字串路徑由模組變數管理）
+    _set_session_id(0)
     _set_photo_index(0)
     _set_state(2)   # IDLE
     print(f'[comm_server] reset => session: {session_id}')
@@ -210,6 +228,7 @@ def _handle_set_module(body):
 
     proc.par.externaltox = tox_path
     proc.par.reinitnet.pulse()
+    
     _set_active_module(module_name)
     print(f'[comm_server] module switched => {module_name}')
 

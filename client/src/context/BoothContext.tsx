@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { io } from 'socket.io-client'
 import type {
   BoothCapabilities, BoothLayout, BoothModule, BoothResult, BoothState,
@@ -120,33 +120,53 @@ export function BoothProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  const value: BoothContextValue = {
+  // 使用 useCallback 封裝所有操作函數，確保它們的引用穩定
+  const triggerShot = useCallback(() => socket.emit('trigger_shot'), [])
+  const stopRecording = useCallback(() => socket.emit('user_clicked_stop'), [])
+  const keepPhoto = useCallback(() => socket.emit('choice_keep', { filename: currentFile }), [currentFile])
+  const retakePhoto = useCallback(() => socket.emit('choice_retake'), [])
+  const finishEarly = useCallback(() => socket.emit('user_clicked_finish_early'), [])
+  const setCaptureMode = useCallback((mode: CaptureMode) => socket.emit('set_capture_mode', { mode }), [])
+  const setTimedDuration = useCallback((duration: number) => socket.emit('set_timed_duration', { duration }), [])
+  const setLayout = useCallback((layoutId: string) => socket.emit('set_layout', { layoutId }), [])
+  const setModule = useCallback((moduleId: string) => socket.emit('set_module', { moduleId }), [])
+  const reset = useCallback(() => socket.emit('user_clicked_reset'), [])
+
+  const startSession = useCallback((data?: { moduleId?: string; layoutId?: string }) => {
+    const moduleId = data?.moduleId || currentModule
+    const layoutId = data?.layoutId || currentLayoutId
+
+    setBoothState(2)
+    setResult(null)
+    setPreviewUrl(null)
+    setKept(0)
+    socket.emit('user_clicked_start', { moduleId, layoutId })
+  }, [currentModule, currentLayoutId])
+
+  // 使用 useMemo 緩存 Context Value
+  const value: BoothContextValue = useMemo(() => ({
     boothState, message, kept, countdown,
     captureMode, timedDuration, capabilities,
     modules, currentModule, currentModuleLayouts, currentLayoutId, previewUrl, result,
     isConnected, activeSlots, videoStream, isCameraStreamActive, setCameraStreamActive: setIsCameraStreamActive, cameraError, // 暴露相機狀態和更新函數
-    triggerShot: () => socket.emit('trigger_shot'),
-    stopRecording: () => socket.emit('user_clicked_stop'),
-    keepPhoto: () => socket.emit('choice_keep', { filename: currentFile }),
-    retakePhoto: () => socket.emit('choice_retake'),
-    finishEarly: () => socket.emit('user_clicked_finish_early'),
-    setCaptureMode: (mode) => socket.emit('set_capture_mode', { mode }),
-    setTimedDuration: (duration) => socket.emit('set_timed_duration', { duration }),
-    setLayout: (layoutId) => socket.emit('set_layout', { layoutId }),
-    setModule: (moduleId) => socket.emit('set_module', { moduleId }),
-    reset: () => socket.emit('user_clicked_reset'),
-    startSession: (data) => {
-      // 如果沒傳入新資料，預設使用當前已選擇的模組與佈局
-      const moduleId = data?.moduleId || currentModule
-      const layoutId = data?.layoutId || currentLayoutId
-
-      setBoothState(2)
-      setResult(null)
-      setPreviewUrl(null) // 清除上一場的預覽，觸發 UI 進入 Initializing 狀態（如果這是預期的）
-      setKept(0)
-      socket.emit('user_clicked_start', { moduleId, layoutId })
-    },
-  }
+    triggerShot,
+    stopRecording,
+    keepPhoto,
+    retakePhoto,
+    finishEarly,
+    setCaptureMode,
+    setTimedDuration,
+    setLayout,
+    setModule,
+    reset,
+    startSession,
+  }), [
+    boothState, message, kept, countdown, captureMode, timedDuration, capabilities,
+    modules, currentModule, currentModuleLayouts, currentLayoutId, previewUrl, result,
+    isConnected, activeSlots, videoStream, isCameraStreamActive, cameraError,
+    triggerShot, stopRecording, keepPhoto, retakePhoto, finishEarly,
+    setCaptureMode, setTimedDuration, setLayout, setModule, reset, startSession
+  ])
 
   return <BoothContext.Provider value={value}>{children}</BoothContext.Provider>
 }
